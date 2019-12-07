@@ -3,53 +3,90 @@ use std::cmp::Eq;
 use std::boxed::Box;
 
 pub struct Gameboard {
-    objects: HashMap<u32, Box<dyn GameboardObject>>,
+    static_objects: HashMap<u32, Box<dyn GameboardObject>>,
+    interactable_objects: HashMap<u32, Box<dyn GameboardObject>>,
+    selectable_objects: HashMap<u32, Box<dyn GameboardObject>>
     last_id: u32
+}
+
+enum GameObjectType {
+    Static,
+    Interactable,
+    Selectable
 }
 
 impl Gameboard {
     pub fn new() -> Gameboard {
         Gameboard {
-            objects: HashMap::new(),
+            static_objects: HashMap::new(),
+            interactable_objects: HashMap::new(),
+            selectable_objects: HashMap::new(),
+            id_to_object_type: HashMap::new(),
             last_id: 0
         }
     }
 
-    pub fn add_object(&mut self, object: impl GameboardObject + 'static) -> u32 {
+    pub fn add_object(&mut self, object_type: GameObjectType, object: impl GameboardObject + 'static) -> u32 {
         self.last_id += 1;
-        self.objects.insert(self.last_id, Box::from(object));
-
+        
+        match object_type {
+            GameObjectType::Static => self.static_objects.insert(self.last_id, Box::new(object)),
+            GameObjectType::Interactable => self.interactable_objects.insert(self.last_id, Box::new(object)),
+            GameObjectType::Selectable => self.selectable_objects.insert(self.last_id, Box::new(object))    
+        };
+        
         self.last_id
     }
 
-    pub fn remove_object(&mut self, id: u32) -> Result<(), String> {
-        if self.objects.contains_key(&id) {
-            self.objects.remove(&id);
-            return Ok(())
-        }
-
-        Err(String::from("Incorrect object id."))
+    pub fn remove_object(&mut self, id: u32) {
+        self.static_objects.remove(&id);
+        self.interactable_objects.remove(&id);
+        self.selectable_objects.remove(&id);
     }
 
-    pub fn get_object(&self, id: u32) -> Result<&Box<dyn GameboardObject>, String> {
-        match self.objects.get(&id) {
-            Some(object) => Ok(object),
-            None => Err(String::from("Incorrect object id."))
+    pub fn get_object(&self, id: u32) -> Option<&Box<dyn GameboardObject>> {
+        if let Some(object) = self.selectable_objects.get(&id) {
+            return Some(&object);
         }
+
+        if let Some(object) = self.interactable_objects.get(&id) {
+            return Some(&object);
+        }
+
+        if let Some(object) = self.selectable_objects.get(&id) {
+            return Some(&object);
+        }
+
+        return None
     }
 
     pub fn execute_operation(&mut self, id: u32, operation: GameboardObjectOperation) -> Result<(), String> {
-        match self.objects.get_mut(&id) {
-            Some(object) => {
-                match object.execute_operation(operation) {
-                    Ok(_) => return Ok(()),
-                    Err(error_message) => return Err(error_message)
-                }
-            },
-            None => {
-                Err(String::from("Incorrect object id."))
-            }
+        if let Some(result) = Gameboard::try_to_execute_for_object_type(id, operation, &self.static_objects) {
+            return result;
         }
+
+        if let Some(result) = Gameboard::try_to_execute_for_object_type(id, operation, &self.interactable_objects) {
+            return result;
+        }
+
+        if let Some(result) = Gameboard::try_to_execute_for_object_type(id, operation, &self.selectable_objects) {
+            return result;
+        }
+
+        Ok(())
+    }
+
+    fn try_to_execute_for_object_type(id: u32, 
+        operation: GameboardObjectOperation, 
+        object_collection: &HashMap<u32, Box<dyn GameboardObject>>) -> Option<Result<(), String>> {
+            if let Some(object) = object_collection.get(&id) {
+                match object.execute_operation(operation) {
+                    Ok(_) => return Some(Ok(())),
+                    Err(error_message) => return Some(Err(error_message))
+                }
+            }
+
+            None
     }
 }
 
