@@ -5,11 +5,12 @@ use std::boxed::Box;
 pub struct Gameboard {
     static_objects: HashMap<u32, Box<dyn GameboardObject>>,
     interactable_objects: HashMap<u32, Box<dyn GameboardObject>>,
-    selectable_objects: HashMap<u32, Box<dyn GameboardObject>>
+    selectable_objects: HashMap<u32, Box<dyn GameboardObject>>,
+    id_to_object_type: HashMap<u32, GameObjectType>,
     last_id: u32
 }
 
-enum GameObjectType {
+pub enum GameObjectType {
     Static,
     Interactable,
     Selectable
@@ -45,17 +46,9 @@ impl Gameboard {
     }
 
     pub fn get_object(&self, id: u32) -> Option<&Box<dyn GameboardObject>> {
-        if let Some(object) = self.selectable_objects.get(&id) {
-            return Some(&object);
-        }
+        let object_type = self.id_to_object_type.get(id);
 
-        if let Some(object) = self.interactable_objects.get(&id) {
-            return Some(&object);
-        }
 
-        if let Some(object) = self.selectable_objects.get(&id) {
-            return Some(&object);
-        }
 
         return None
     }
@@ -77,7 +70,7 @@ impl Gameboard {
     }
 
     fn try_to_execute_for_object_type(id: u32, 
-        operation: GameboardObjectOperation, 
+        operation: &GameboardObjectOperation, 
         object_collection: &HashMap<u32, Box<dyn GameboardObject>>) -> Option<Result<(), String>> {
             if let Some(object) = object_collection.get(&id) {
                 match object.execute_operation(operation) {
@@ -91,7 +84,7 @@ impl Gameboard {
 }
 
 pub trait GameboardObject {
-    fn execute_operation(&mut self, operation: GameboardObjectOperation) -> Result<(), String>;
+    fn execute_operation(&mut self, operation: &GameboardObjectOperation) -> Result<(), String>;
     fn get_position(&self) -> &Coordinates;
     fn get_size(&self) -> &Size;
 }
@@ -179,7 +172,7 @@ impl Size {
 
 #[cfg(test)]
 mod tests {
-    use crate::mocks::setup_board_with_one_object;
+    use crate::mocks::setup_board_with_one_selectable_object;
     use super::*;
     use crate::mocks::MockGameObject;
 
@@ -188,32 +181,13 @@ mod tests {
         let mut gameboard = Gameboard::new();
         
         let mock_object = MockGameObject::new();
-        let mut id = gameboard.add_object(mock_object);
+        let mut id = gameboard.add_object(GameObjectType::Selectable, mock_object);
         assert_eq!(id, 1);
-        
-        let mock_object = MockGameObject::new();
-        id = gameboard.add_object(mock_object);
-        assert_eq!(id, 2);
-    }
-
-    #[test]
-    fn remove_object_correct_id_returns_ok() {
-        let mut gameboard = setup_board_with_one_object();
-        let result = gameboard.remove_object(1);
-        assert_eq!(result.is_ok(), true);
-    }
-
-    #[test]
-    fn remove_object_incorrect_id_returns_err() {
-        let mut gameboard = setup_board_with_one_object();
-        let result = gameboard.remove_object(3);
-
-        assert_eq!(result.is_err(), true);
     }
 
     #[test]
     fn execute_operation_correct_id_returns_ok() {
-        let mut gameboard = setup_board_with_one_object();
+        let mut gameboard = setup_board_with_one_selectable_object();
         let result = gameboard.execute_operation(1, GameboardObjectOperation::None);
 
         assert_eq!(result.is_ok(), true);
@@ -221,32 +195,32 @@ mod tests {
 
     #[test]
     fn execute_operation_incorrect_id_returns_err() {
-        let mut gameboard = setup_board_with_one_object();
+        let mut gameboard = setup_board_with_one_selectable_object();
         let result = gameboard.execute_operation(3, GameboardObjectOperation::None);
 
         assert_eq!(result.is_err(), true);
     }
     
     #[test]
-    fn get_object_correct_id_returns_ok() {
-        let gameboard = setup_board_with_one_object();
+    fn get_object_correct_id_returns_some() {
+        let gameboard = setup_board_with_one_selectable_object();
         let result = gameboard.get_object(1);
 
-        assert_eq!(result.is_ok(), true);
+        assert_eq!(result.is_some(), true);
     }
 
     #[test]
-    fn get_object_incorrct_id_returns_err() {
-        let gameboard = setup_board_with_one_object();
+    fn get_object_incorrct_id_returns_none() {
+        let gameboard = setup_board_with_one_selectable_object();
         let result = gameboard.get_object(2);
 
-        assert_eq!(result.is_err(), true);
+        assert_eq!(result.is_none(), true);
     }
 
     fn setup_gameboard_with_one_character_object() -> Gameboard {
         let mut gameboard = Gameboard::new();
         let character_object = CharacterObject::new(Coordinates::new(0.0, 0.0), Size::new(0.0, 0.0));
-        gameboard.add_object(character_object);
+        gameboard.add_object(GameObjectType::Selectable ,character_object);
         gameboard
     }
 

@@ -22,11 +22,11 @@ impl GameboardObject for MockGameObject {
     }
 }
 
-pub fn setup_board_with_one_object() -> Gameboard {
+pub fn setup_board_with_one_selectable_object() -> Gameboard {
     let mut gameboard = Gameboard::new();
     
     let mock_object = MockGameObject::new();
-    let mut id = gameboard.add_object(mock_object);
+    let mut id = gameboard.add_object(GameObjectType::Selectable, mock_object);
     
     gameboard
 }
