@@ -81,7 +81,7 @@ impl Gameboard {
             Err(String::from("No such object"))
     }
 
-    fn is_selected(&self, cursor_pos: Coordinates) -> Option<u32> {
+    pub fn is_selected(&self, cursor_pos: Coordinates) -> Option<u32> {
         let selectable_objects = self.game_obiects.get(&GameObjectType::Selectable).unwrap();
         
         for object in selectable_objects {
@@ -158,12 +158,12 @@ impl GameboardObject for CharacterObject {
 
 #[derive(PartialEq, Debug)]
 pub struct Coordinates {
-    x: f32,
-    y: f32
+    pub x: f64,
+    pub y: f64
 }
 
 impl Coordinates {
-    pub fn new(x: f32, y: f32) -> Coordinates {
+    pub fn new(x: f64, y: f64) -> Coordinates {
         Coordinates {
             x,
             y
@@ -175,18 +175,18 @@ impl Coordinates {
         self.y = new_coordinates.y;
     }
 
-    pub fn get(&self) -> (f32, f32) {
+    pub fn get(&self) -> (f64, f64) {
         (self.x, self.y)
     }
 }
 
 pub struct Size {
-    width: f32,
-    height: f32
+    width: f64,
+    height: f64
 }
 
 impl Size {
-    pub fn new(width: f32, height: f32) -> Size{
+    pub fn new(width: f64, height: f64) -> Size{
         Size {
             width,
             height
