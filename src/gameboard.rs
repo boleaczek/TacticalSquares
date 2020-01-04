@@ -80,6 +80,17 @@ impl Gameboard {
 
             Err(String::from("No such object"))
     }
+
+    fn is_selected(&self, cursor_pos: Coordinates) -> Option<u32> {
+        let selectable_objects = self.game_obiects.get(&GameObjectType::Selectable).unwrap();
+        
+        for object in selectable_objects {
+            if check_if_gameboard_object_is_selected(&object.1, &cursor_pos) {
+                return Some(*object.0)
+            }
+        }
+        None
+    }
 }
 
 pub trait GameboardObject {
@@ -96,6 +107,20 @@ pub enum GameboardObjectOperation {
 pub struct CharacterObject {
     position: Coordinates,
     size: Size
+}
+
+fn check_if_gameboard_object_is_selected(object: &Box<dyn GameboardObject>, coordinates: &Coordinates) -> bool {
+    let object_size = object.get_size();
+    
+    let object_coordinates = object.get_position();
+    let object_bottom_coordinates = Coordinates::new(object_coordinates.x + object_size.width
+        , object_coordinates.y + object_size.height);
+
+    if (coordinates.x >= object_coordinates.x && coordinates.x <= object_bottom_coordinates.x) &&
+        (coordinates.y >= object_coordinates.y && coordinates.y <= object_bottom_coordinates.y) {
+        return true;
+    }
+    return false;
 }
 
 impl CharacterObject {
@@ -237,5 +262,25 @@ mod tests {
         let expected_position = Coordinates::new(1.0, 1.0);
 
         assert_eq!(position, &expected_position);
+    }
+
+    // mock position x: 0.0, y: 0.0
+    // mock size width: 0.0, height: 0.0
+    #[test]
+    fn is_selected_coordinates_with_object_provided_object_is_returned() {
+        let gameboard = setup_board_with_one_selectable_object();
+        let coordinates = Coordinates::new(0.0, 0.0);
+
+        let result = gameboard.is_selected(coordinates);
+        assert_eq!(result.is_some(), true);
+    }
+
+    #[test]
+    fn is_selected_coordinates_with_no_object_provided_object_is_not_returned() {
+        let gameboard = setup_board_with_one_selectable_object();
+        let coordinates = Coordinates::new(60.0, 60.0);
+
+        let result = gameboard.is_selected(coordinates);
+        assert_eq!(result.is_none(), true);
     }
 }

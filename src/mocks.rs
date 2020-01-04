@@ -1,10 +1,16 @@
 use crate::gameboard::*;
 
-pub struct MockGameObject {}
+pub struct MockGameObject {
+    position: Coordinates,
+    size: Size
+}
 
 impl MockGameObject {
     pub fn new() -> MockGameObject {
-        MockGameObject {}
+        MockGameObject {
+            position: Coordinates::new(0.0, 0.0),
+            size: Size::new(50.0, 50.0)
+        }
     }
 }
 
@@ -14,11 +20,11 @@ impl GameboardObject for MockGameObject {
     }
 
     fn get_position(&self) -> &Coordinates {
-        unimplemented!();
+        &self.position
     }
 
     fn get_size(&self) -> &Size {
-        unimplemented!();
+        &self.size
     }
 }
 
