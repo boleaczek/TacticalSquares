@@ -61,7 +61,10 @@ impl GameboardController {
     fn leftClick(&mut self, cursor_pos: Coordinates) {
         println!("LeftClick on ({},{})", cursor_pos.x, cursor_pos.y);
         if let Some(id) = self.gameboard.is_selected(cursor_pos) {
-
+            self.selection_status = SelectionStatus::SomethingSelected(id);
+        }
+        else {
+            self.selection_status = SelectionStatus::NothingSelected;
         }
     }
 
@@ -83,7 +86,7 @@ mod tests {
     use crate::mocks;
 
     fn setup_gameboard_controller_with_one_id() -> GameboardController{
-        let gameboard = Gameboard::new();
+        let gameboard = mocks::setup_board_with_one_selectable_object();
         let mut game_controller = GameboardController::new(gameboard);
 
         game_controller
@@ -101,7 +104,7 @@ mod tests {
     #[test]
     fn nothing_selected_on_left_click_coordinates_with_nothing_selection_doesent_change() {
         let mut game_controller = setup_gameboard_controller_with_one_id();
-        game_controller.onClick(Coordinates::new(1.0, 1.0), MouseButton::Left);
+        game_controller.onClick(Coordinates::new(60.0, 60.0), MouseButton::Left);
         
         let expected_status = SelectionStatus::NothingSelected;
         assert_eq!(game_controller.selection_status, expected_status);
@@ -112,32 +115,16 @@ mod tests {
         let mut game_controller = setup_gameboard_controller_with_one_id();
         game_controller.onClick(Coordinates::new(1.0, 1.0), MouseButton::Left);
         
-        let expected_status = SelectionStatus::SomethingSelected(2);
+        let expected_status = SelectionStatus::SomethingSelected(1);
         assert_eq!(game_controller.selection_status, expected_status);
     }
 
     #[test]
     fn something_selected_on_left_click_coordinates_with_nothing_status_changes_to_nothing() {
         let mut game_controller = setup_gameboard_controller_with_one_id();
-        game_controller.onClick(Coordinates::new(1.0, 1.0), MouseButton::Left);
+        game_controller.onClick(Coordinates::new(60.0, 60.0), MouseButton::Left);
         
         let expected_status = SelectionStatus::NothingSelected;
         assert_eq!(game_controller.selection_status, expected_status);
-    }
-
-    #[test]
-    fn something_selected_on_right_click_coordinates_change() {
-        // use gameboard::{CharacterObject, Size};
-        
-        // let mut game_controller = setup_gameboard_controller_with_one_id();
-        // let character_object = CharacterObject::new(Coordinates::new(0.0, 0.0), Size::new(0.0, 0.0));
-        // game_controller.gameboard.add_object(GameObjectType::Selectable, character_object);
-
-        // game_controller.leftClick(Coordinates::new(0.0, 0.0));
-        // game_controller.onClick(Coordinates::new(1.0, 1.0), MouseButton::Right);
-
-        // let new_coordinates = game_controller.id_to_position.get(&(1,1));
-        // let expected_status = Some(&1);
-        // assert_eq!(new_coordinates, expected_status);
     }
 }
