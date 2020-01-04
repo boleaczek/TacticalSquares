@@ -3,13 +3,12 @@ use std::cmp::Eq;
 use std::boxed::Box;
 
 pub struct Gameboard {
-    static_objects: HashMap<u32, Box<dyn GameboardObject>>,
-    interactable_objects: HashMap<u32, Box<dyn GameboardObject>>,
-    selectable_objects: HashMap<u32, Box<dyn GameboardObject>>,
+    game_obiects: HashMap<GameObjectType, HashMap<u32, Box<dyn GameboardObject>>>,
     id_to_object_type: HashMap<u32, GameObjectType>,
     last_id: u32
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum GameObjectType {
     Static,
     Interactable,
@@ -18,73 +17,73 @@ pub enum GameObjectType {
 
 impl Gameboard {
     pub fn new() -> Gameboard {
+        let mut game_obiects = HashMap::new();
+        game_obiects.insert(GameObjectType::Static, HashMap::new());
+        game_obiects.insert(GameObjectType::Interactable, HashMap::new());
+        game_obiects.insert(GameObjectType::Selectable, HashMap::new());
+
         Gameboard {
-            static_objects: HashMap::new(),
-            interactable_objects: HashMap::new(),
-            selectable_objects: HashMap::new(),
+            game_obiects: game_obiects,
             id_to_object_type: HashMap::new(),
             last_id: 0
         }
     }
 
+    fn get_object_type(id_to_object_type: &HashMap<u32, GameObjectType>
+        , id: u32) -> Option<&GameObjectType> {
+        return id_to_object_type.get(&id);
+    }
+
     pub fn add_object(&mut self, object_type: GameObjectType, object: impl GameboardObject + 'static) -> u32 {
         self.last_id += 1;
         
-        match object_type {
-            GameObjectType::Static => self.static_objects.insert(self.last_id, Box::new(object)),
-            GameObjectType::Interactable => self.interactable_objects.insert(self.last_id, Box::new(object)),
-            GameObjectType::Selectable => self.selectable_objects.insert(self.last_id, Box::new(object))    
-        };
+        let obiects_map = self.game_obiects.get_mut(&object_type).unwrap();
+        self.id_to_object_type.insert(self.last_id, object_type);
+        
+        obiects_map.insert(self.last_id, Box::from(object));
         
         self.last_id
     }
 
     pub fn remove_object(&mut self, id: u32) {
-        self.static_objects.remove(&id);
-        self.interactable_objects.remove(&id);
-        self.selectable_objects.remove(&id);
+        // let object_type = self.get_object_type(id);
+        if let Some(object_type) = Gameboard::get_object_type(&self.id_to_object_type, id) {
+            let obiects_map = self.game_obiects.get_mut(object_type).unwrap();
+            obiects_map.remove(&id);
+        }
     }
 
     pub fn get_object(&self, id: u32) -> Option<&Box<dyn GameboardObject>> {
-        let object_type = self.id_to_object_type.get(id);
-
-
+        if let Some(object_type) = Gameboard::get_object_type(&self.id_to_object_type, id) {
+            let obiects_map = self.game_obiects.get(&object_type).unwrap();
+            return obiects_map.get(&id);
+        }
 
         return None
     }
 
-    pub fn execute_operation(&mut self, id: u32, operation: GameboardObjectOperation) -> Result<(), String> {
-        if let Some(result) = Gameboard::try_to_execute_for_object_type(id, operation, &self.static_objects) {
-            return result;
-        }
-
-        if let Some(result) = Gameboard::try_to_execute_for_object_type(id, operation, &self.interactable_objects) {
-            return result;
-        }
-
-        if let Some(result) = Gameboard::try_to_execute_for_object_type(id, operation, &self.selectable_objects) {
-            return result;
-        }
-
-        Ok(())
+    pub fn execute_operation(&mut self, id: u32, operation: GameboardObjectOperation, object_type: GameObjectType) -> Result<(), String> {
+        let desired_objects = self.game_obiects.get_mut(&object_type).unwrap();
+        
+        return Gameboard::try_to_execute_for_object_type(id, operation, desired_objects);
     }
 
     fn try_to_execute_for_object_type(id: u32, 
-        operation: &GameboardObjectOperation, 
-        object_collection: &HashMap<u32, Box<dyn GameboardObject>>) -> Option<Result<(), String>> {
-            if let Some(object) = object_collection.get(&id) {
+        operation: GameboardObjectOperation, 
+        object_collection: &mut HashMap<u32, Box<dyn GameboardObject>>) -> Result<(), String> {
+            if let Some(object) = object_collection.get_mut(&id) {
                 match object.execute_operation(operation) {
-                    Ok(_) => return Some(Ok(())),
-                    Err(error_message) => return Some(Err(error_message))
+                    Ok(_) => return Ok(()),
+                    Err(error_message) => return Err(error_message)
                 }
             }
 
-            None
+            Err(String::from("No such object"))
     }
 }
 
 pub trait GameboardObject {
-    fn execute_operation(&mut self, operation: &GameboardObjectOperation) -> Result<(), String>;
+    fn execute_operation(&mut self, operation: GameboardObjectOperation) -> Result<(), String>;
     fn get_position(&self) -> &Coordinates;
     fn get_size(&self) -> &Size;
 }
@@ -188,7 +187,7 @@ mod tests {
     #[test]
     fn execute_operation_correct_id_returns_ok() {
         let mut gameboard = setup_board_with_one_selectable_object();
-        let result = gameboard.execute_operation(1, GameboardObjectOperation::None);
+        let result = gameboard.execute_operation(1, GameboardObjectOperation::None, GameObjectType::Selectable);
 
         assert_eq!(result.is_ok(), true);
     }
@@ -196,7 +195,7 @@ mod tests {
     #[test]
     fn execute_operation_incorrect_id_returns_err() {
         let mut gameboard = setup_board_with_one_selectable_object();
-        let result = gameboard.execute_operation(3, GameboardObjectOperation::None);
+        let result = gameboard.execute_operation(3, GameboardObjectOperation::None, GameObjectType::Selectable);
 
         assert_eq!(result.is_err(), true);
     }
@@ -228,7 +227,7 @@ mod tests {
     fn character_object_move_operation_returns_ok_coordinates_change() {
         let mut gameboard = setup_gameboard_with_one_character_object();
         let operation = GameboardObjectOperation::Move(Coordinates::new(1.0, 1.0));
-        let result = gameboard.execute_operation(1, operation);
+        let result = gameboard.execute_operation(1, operation, GameObjectType::Selectable);
 
         assert_eq!(result.is_ok(), true);
         

@@ -5,6 +5,7 @@ use crate::gameboard;
 use crate::gameboard::Gameboard;
 use crate::gameboard::Coordinates;
 use crate::gameboard::GameboardObjectOperation;
+use crate::gameboard::GameObjectType;
 use std::collections::HashMap;
 
 #[derive(PartialEq, Debug)]
@@ -71,7 +72,7 @@ impl GameboardController {
         match self.selection_status {
             SelectionStatus::SomethingSelected(id, current_coordinates) => {
                 let operation = GameboardObjectOperation::Move(Coordinates::new(coordinates.0 as f32, coordinates.1 as f32));
-                self.gameboard.execute_operation(id, operation).unwrap();
+                self.gameboard.execute_operation(id, operation, GameObjectType::Selectable).unwrap();
                 self.id_to_position.remove(&coordinates);
                 self.selection_status = SelectionStatus::SomethingSelected(id, coordinates);
                 self.id_to_position.insert(coordinates, id);
@@ -136,7 +137,7 @@ mod tests {
         
         let mut game_controller = setup_gameboard_controller_with_one_id();
         let character_object = CharacterObject::new(Coordinates::new(0.0, 0.0), Size::new(0.0, 0.0));
-        game_controller.gameboard.add_object(character_object);
+        game_controller.gameboard.add_object(GameObjectType::Selectable, character_object);
 
         game_controller.leftClick((0,0));
         game_controller.onClick((1, 1), MouseButton::Right);
