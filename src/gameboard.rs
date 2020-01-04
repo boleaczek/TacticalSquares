@@ -3,7 +3,7 @@ use std::cmp::Eq;
 use std::boxed::Box;
 
 pub struct Gameboard {
-    game_obiects: HashMap<GameObjectType, HashMap<u32, Box<dyn GameboardObject>>>,
+    game_objects: HashMap<GameObjectType, HashMap<u32, Box<dyn GameboardObject>>>,
     id_to_object_type: HashMap<u32, GameObjectType>,
     last_id: u32
 }
@@ -17,13 +17,13 @@ pub enum GameObjectType {
 
 impl Gameboard {
     pub fn new() -> Gameboard {
-        let mut game_obiects = HashMap::new();
-        game_obiects.insert(GameObjectType::Static, HashMap::new());
-        game_obiects.insert(GameObjectType::Interactable, HashMap::new());
-        game_obiects.insert(GameObjectType::Selectable, HashMap::new());
+        let mut game_objects = HashMap::new();
+        game_objects.insert(GameObjectType::Static, HashMap::new());
+        game_objects.insert(GameObjectType::Interactable, HashMap::new());
+        game_objects.insert(GameObjectType::Selectable, HashMap::new());
 
         Gameboard {
-            game_obiects: game_obiects,
+            game_objects: game_objects,
             id_to_object_type: HashMap::new(),
             last_id: 0
         }
@@ -37,10 +37,10 @@ impl Gameboard {
     pub fn add_object(&mut self, object_type: GameObjectType, object: impl GameboardObject + 'static) -> u32 {
         self.last_id += 1;
         
-        let obiects_map = self.game_obiects.get_mut(&object_type).unwrap();
+        let objects_map = self.game_objects.get_mut(&object_type).unwrap();
         self.id_to_object_type.insert(self.last_id, object_type);
         
-        obiects_map.insert(self.last_id, Box::from(object));
+        objects_map.insert(self.last_id, Box::from(object));
         
         self.last_id
     }
@@ -48,22 +48,22 @@ impl Gameboard {
     pub fn remove_object(&mut self, id: u32) {
         // let object_type = self.get_object_type(id);
         if let Some(object_type) = Gameboard::get_object_type(&self.id_to_object_type, id) {
-            let obiects_map = self.game_obiects.get_mut(object_type).unwrap();
-            obiects_map.remove(&id);
+            let objects_map = self.game_objects.get_mut(object_type).unwrap();
+            objects_map.remove(&id);
         }
     }
 
     pub fn get_object(&self, id: u32) -> Option<&Box<dyn GameboardObject>> {
         if let Some(object_type) = Gameboard::get_object_type(&self.id_to_object_type, id) {
-            let obiects_map = self.game_obiects.get(&object_type).unwrap();
-            return obiects_map.get(&id);
+            let objects_map = self.game_objects.get(&object_type).unwrap();
+            return objects_map.get(&id);
         }
 
         return None
     }
 
     pub fn execute_operation(&mut self, id: u32, operation: GameboardObjectOperation, object_type: GameObjectType) -> Result<(), String> {
-        let desired_objects = self.game_obiects.get_mut(&object_type).unwrap();
+        let desired_objects = self.game_objects.get_mut(&object_type).unwrap();
         
         return Gameboard::try_to_execute_for_object_type(id, operation, desired_objects);
     }
@@ -82,7 +82,7 @@ impl Gameboard {
     }
 
     pub fn is_selected(&self, cursor_pos: Coordinates) -> Option<u32> {
-        let selectable_objects = self.game_obiects.get(&GameObjectType::Selectable).unwrap();
+        let selectable_objects = self.game_objects.get(&GameObjectType::Selectable).unwrap();
         
         for object in selectable_objects {
             if check_if_gameboard_object_is_selected(&object.1, &cursor_pos) {
