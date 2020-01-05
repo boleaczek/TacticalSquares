@@ -40,7 +40,7 @@ fn main() {
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {
                 use graphics::{clear};
-  
+                gameboard_view::render(gameboard_controller.gameboard.get_all_objects(), &c, g);
                 clear([1.0; 4], g);
             });
         }

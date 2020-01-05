@@ -91,6 +91,16 @@ impl Gameboard {
         }
         None
     }
+
+    pub fn get_all_objects(&self) -> Vec<&Box<dyn GameboardObject>> {
+        let mut objects = Vec::new();
+
+        for object in self.game_objects.get(&GameObjectType::Selectable).unwrap() {
+            objects.push(object.1);
+        }
+
+        return objects;
+    }
 }
 
 pub trait GameboardObject {
@@ -181,8 +191,8 @@ impl Coordinates {
 }
 
 pub struct Size {
-    width: f64,
-    height: f64
+    pub width: f64,
+    pub height: f64
 }
 
 impl Size {

@@ -15,7 +15,7 @@ enum SelectionStatus {
 }
 
 pub struct GameboardController {
-    gameboard: Gameboard,
+    pub gameboard: Gameboard,
     selection_status: SelectionStatus,
     current_cursor_pos: Coordinates
 }
