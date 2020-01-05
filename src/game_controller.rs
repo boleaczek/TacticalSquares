@@ -31,13 +31,10 @@ impl GameboardController {
     
     pub fn event<E: GenericEvent>(&mut self, e: &E) {
         if let Some(cursor_pos) = e.mouse_cursor_args() {
-            println!("cursor args is some");
             self.current_cursor_pos = Coordinates::new(cursor_pos[0], cursor_pos[1]);
         }
 
-        // println!("checking rest");
         if let Some(button) = e.press_args() {
-            println!("event is button");
             match button {
                 Button::Mouse(button) => {
                     let pos = Coordinates::new(self.current_cursor_pos.x, self.current_cursor_pos.y);
@@ -52,14 +49,11 @@ impl GameboardController {
         match button {
             MouseButton::Left => self.leftClick(coordinates),
             MouseButton::Right => self.rightClick(coordinates),
-            _ => {
-                println!("not a mouse button");
-            }
+            _ => {}
         }
     }
 
     fn leftClick(&mut self, cursor_pos: Coordinates) {
-        println!("LeftClick on ({},{})", cursor_pos.x, cursor_pos.y);
         if let Some(id) = self.gameboard.is_selected(cursor_pos) {
             self.selection_status = SelectionStatus::SomethingSelected(id);
         }
@@ -69,7 +63,6 @@ impl GameboardController {
     }
 
     fn rightClick(&mut self, cursor_pos: Coordinates) {
-        println!("RightClick on ({},{})", cursor_pos.x, cursor_pos.y);
         match self.selection_status {
             SelectionStatus::SomethingSelected(id) => {
                 let operation = GameboardObjectOperation::Move(cursor_pos);
