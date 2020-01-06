@@ -166,7 +166,7 @@ impl GameboardObject for CharacterObject {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Coordinates {
     pub x: f64,
     pub y: f64

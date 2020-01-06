@@ -14,9 +14,108 @@ enum SelectionStatus {
     NothingSelected
 }
 
+#[derive(PartialEq, Debug)]
+enum MovementDirection {
+    Up,
+    Down,
+    None
+}
+
+#[derive(PartialEq, Debug)]
+struct MovementManager {
+    current_position: Coordinates,
+    destination: Coordinates,
+    direction_x: MovementDirection,
+    direction_y: MovementDirection,
+    pub id: u32
+}
+
+impl MovementManager {
+    pub fn start_move(current_position: Coordinates, destination: Coordinates, id: u32) -> MovementManager {
+        let direction_x = MovementManager::determine_direction(current_position.x, destination.x);
+        let direction_y = MovementManager::determine_direction(current_position.y, destination.y);
+
+        MovementManager {
+            current_position,
+            destination,
+            direction_x,
+            direction_y,
+            id
+        }
+    }
+
+    pub fn pool_move_command(&mut self) -> Option<GameboardObjectOperation> {
+        self.check_reached_status();
+        
+        let x = self.current_position.x;
+        let y = self.current_position.y;
+
+        let move_x = MovementManager::get_direction(&self.direction_x);
+        let move_y = MovementManager::get_direction(&self.direction_y);
+
+        let next_position = Coordinates::new(x + move_x, y + move_y);
+
+        self.current_position = next_position.clone();
+
+        Some(GameboardObjectOperation::Move(next_position))
+    }
+
+    fn check_reached_status(&mut self) {
+        if MovementManager::is_reached(&self.direction_x, self.current_position.x, self.destination.x) {
+            self.direction_x = MovementDirection::None;
+        }
+
+        if MovementManager::is_reached(&self.direction_y, self.current_position.y, self.destination.y) {
+            self.direction_y = MovementDirection::None;
+        }
+    }
+
+    fn is_reached(direction: &MovementDirection, current_position: f64, destination: f64) -> bool {
+        match direction {
+            MovementDirection::Down => {
+                if current_position <= destination {
+                    return true;
+                }
+            },
+            MovementDirection::Up => {
+                if current_position >= destination {
+                    return true;
+                }
+            },
+            MovementDirection::None => return true
+        };
+        return false;
+    }
+
+    fn get_direction(direction: &MovementDirection) -> f64 {
+        match direction {
+            MovementDirection::Up => return 1.0,
+            MovementDirection::Down => return -1.0,
+            MovementDirection::None => return 0.0
+        }
+    }
+
+    fn determine_direction(current_position: f64, destination: f64) -> MovementDirection {
+        let movemement_direction;
+        
+        if current_position > destination {
+            movemement_direction = MovementDirection::Down;
+        }
+        else if current_position < destination{
+            movemement_direction = MovementDirection::Up;
+        }
+        else {
+            movemement_direction = MovementDirection::None;
+        }
+
+        return movemement_direction;
+    }
+}
+
 pub struct GameboardController {
     pub gameboard: Gameboard,
     selection_status: SelectionStatus,
+    movement_status: Option<MovementManager>,
     current_cursor_pos: Coordinates
 }
 
@@ -25,6 +124,7 @@ impl GameboardController {
         GameboardController {
             gameboard,
             selection_status: SelectionStatus::NothingSelected,
+            movement_status: None,
             current_cursor_pos: Coordinates::new(0.0, 0.0)
         }
     }
@@ -41,6 +141,12 @@ impl GameboardController {
                     self.onClick(pos, button)
                 },
                 _ => ()
+            }
+        }
+
+        if let Some(movement_manager) = &mut self.movement_status {
+            if let Some(move_command) = movement_manager.pool_move_command() {
+                self.gameboard.execute_operation(movement_manager.id, move_command, GameObjectType::Selectable).unwrap();
             }
         }
     }
@@ -65,8 +171,9 @@ impl GameboardController {
     fn rightClick(&mut self, cursor_pos: Coordinates) {
         match self.selection_status {
             SelectionStatus::SomethingSelected(id) => {
-                let operation = GameboardObjectOperation::Move(cursor_pos);
-                self.gameboard.execute_operation(id, operation, GameObjectType::Selectable).unwrap();
+                let current_pos = self.gameboard.get_object(id).unwrap().get_position();
+                let movement_manager = MovementManager::start_move(current_pos.clone(), cursor_pos.clone(), id);
+                self.movement_status = Some(movement_manager);
             },
             SelectionStatus::NothingSelected => ()
         }
