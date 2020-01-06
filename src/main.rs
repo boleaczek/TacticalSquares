@@ -25,7 +25,7 @@ fn build_controller() -> game_controller::GameboardController {
 
 fn main() {
     let opengl = OpenGL::V3_2;
-    let settings = WindowSettings::new("Tic tac toe", [512; 2])
+    let settings = WindowSettings::new("Tactical Squares", [512; 2])
         .graphics_api(opengl)
         .exit_on_esc(true);
 
