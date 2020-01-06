@@ -4,6 +4,7 @@ use piston::input::{Button, MouseButton};
 use crate::gameboard;
 use crate::gameboard::Gameboard;
 use crate::gameboard::Coordinates;
+use crate::gameboard::Size;
 use crate::gameboard::GameboardObjectOperation;
 use crate::gameboard::GameObjectType;
 use std::collections::HashMap;
@@ -112,6 +113,13 @@ impl MovementManager {
     }
 }
 
+fn get_middle_point(position: &Coordinates, size: &Size) -> Coordinates {
+    let x_move = size.width / 2.0;
+    let y_move = size.height / 2.0;
+    
+    Coordinates::new(position.x - x_move, position.y - y_move)
+}
+
 pub struct GameboardController {
     pub gameboard: Gameboard,
     selection_status: SelectionStatus,
@@ -171,8 +179,13 @@ impl GameboardController {
     fn rightClick(&mut self, cursor_pos: Coordinates) {
         match self.selection_status {
             SelectionStatus::SomethingSelected(id) => {
-                let current_pos = self.gameboard.get_object(id).unwrap().get_position();
-                let movement_manager = MovementManager::start_move(current_pos.clone(), cursor_pos.clone(), id);
+                let object = self.gameboard.get_object(id).unwrap();
+                let current_pos = object.get_position();
+                let size = object.get_size();
+                
+                let destination = get_middle_point(&cursor_pos, size);
+
+                let movement_manager = MovementManager::start_move(current_pos.clone(), destination, id);
                 self.movement_status = Some(movement_manager);
             },
             SelectionStatus::NothingSelected => ()
