@@ -12,6 +12,7 @@ use piston::input::RenderEvent;
 pub mod game_controller;
 pub mod gameboard_view;
 pub mod game_data;
+pub mod game_controller;
 
 // fn build_controller() -> game_controller::GameboardController {
 //     let mut gameboard = gameboard::Gameboard::new();

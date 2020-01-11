@@ -4,7 +4,7 @@ use piston::input::{Button, MouseButton};
 use std::collections::HashMap;
 
 use crate::game_data::gameboard::Gameboard;
-use crate::game_data::game_object::data;
+use crate::game_data::game_object::data::{Coordinates, Size};
 
 #[derive(PartialEq, Debug)]
 enum SelectionStatus {
@@ -117,23 +117,17 @@ fn get_middle_point(position: &Coordinates, size: &Size) -> Coordinates {
     Coordinates::new(position.x - x_move, position.y - y_move)
 }
 
-pub struct GameboardController {
-    pub gameboard: Gameboard,
-    selection_status: SelectionStatus,
-    movement_status: Option<MovementManager>,
-    current_cursor_pos: dataCoordinates
+pub struct UserInputManager {
+    last_cursor_pos: Coordinates
 }
 
-impl GameboardController {
-    pub fn new(gameboard: Gameboard) -> GameboardController {
-        GameboardController {
-            gameboard,
-            selection_status: SelectionStatus::NothingSelected,
-            movement_status: None,
-            current_cursor_pos: Coordinates::new(0.0, 0.0)
+impl UserInputManager {
+    fn new() -> UserInputManager {
+        UserInputManager {
+            last_cursor_pos: Coordinates::new(0.0, 0.0)
         }
     }
-    
+
     pub fn event<E: GenericEvent>(&mut self, e: &E) {
         if let Some(cursor_pos) = e.mouse_cursor_args() {
             self.current_cursor_pos = Coordinates::new(cursor_pos[0], cursor_pos[1]);
@@ -186,6 +180,28 @@ impl GameboardController {
                 self.movement_status = Some(movement_manager);
             },
             SelectionStatus::NothingSelected => ()
+        }
+    }
+}
+
+pub struct GameController {
+    gameboard: Gameboard
+}
+
+pub struct GameboardController {
+    pub gameboard: Gameboard,
+    selection_status: SelectionStatus,
+    movement_status: Option<MovementManager>,
+    current_cursor_pos: dataCoordinates
+}
+
+impl GameboardController {
+    pub fn new(gameboard: Gameboard) -> GameboardController {
+        GameboardController {
+            gameboard,
+            selection_status: SelectionStatus::NothingSelected,
+            movement_status: None,
+            current_cursor_pos: Coordinates::new(0.0, 0.0)
         }
     }
 }
