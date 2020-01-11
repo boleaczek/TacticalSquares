@@ -11,17 +11,16 @@ use piston::input::RenderEvent;
 
 pub mod game_controller;
 pub mod gameboard_view;
-pub mod gameboard;
-pub mod mocks;
+pub mod game_data;
 
-fn build_controller() -> game_controller::GameboardController {
-    let mut gameboard = gameboard::Gameboard::new();
-    let gameboard_object0 = gameboard::CharacterObject::new(gameboard::Coordinates::new(0.0, 0.0), gameboard::Size::new(50.0, 50.0));
-    let gameboard_object1 = gameboard::CharacterObject::new(gameboard::Coordinates::new(70.0, 0.0), gameboard::Size::new(50.0, 50.0));
-    gameboard.add_object(gameboard::GameObjectType::Selectable, gameboard_object0);
-    gameboard.add_object(gameboard::GameObjectType::Selectable, gameboard_object1);
-    game_controller::GameboardController::new(gameboard)
-}
+// fn build_controller() -> game_controller::GameboardController {
+//     let mut gameboard = gameboard::Gameboard::new();
+//     let gameboard_object0 = gameboard::CharacterObject::new(gameboard::Coordinates::new(0.0, 0.0), gameboard::Size::new(50.0, 50.0));
+//     let gameboard_object1 = gameboard::CharacterObject::new(gameboard::Coordinates::new(70.0, 0.0), gameboard::Size::new(50.0, 50.0));
+//     gameboard.add_object(gameboard::GameObjectType::Selectable, gameboard_object0);
+//     gameboard.add_object(gameboard::GameObjectType::Selectable, gameboard_object1);
+//     game_controller::GameboardController::new(gameboard)
+// }
 
 fn main() {
     let opengl = OpenGL::V3_2;
@@ -32,17 +31,17 @@ fn main() {
     let mut window: GlutinWindow = settings.build()
         .expect("Could not create window");
 
-    let mut gameboard_controller = build_controller();
+    // let mut gameboard_controller = build_controller();
 
     let mut events = Events::new(EventSettings::new());
     let mut gl = GlGraphics::new(opengl);
 
     while let Some(e) = events.next(&mut window) {
-        gameboard_controller.event(&e);
+        // gameboard_controller.event(&e);
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {
                 use graphics::{clear};
-                gameboard_view::render(gameboard_controller.gameboard.get_all_objects(), &c, g);
+                // gameboard_view::render(gameboard_controller.gameboard.get_all_objects(), &c, g);
                 clear([1.0; 4], g);
             });
         }
