@@ -7,7 +7,6 @@ use crate::game_data::game_object::GameObject;
 use crate::game_data::game_object::data::*;
 
 pub enum GameboardObjectOperation {
-    None, // for test purposes only
     Move(Coordinates)
 }
 
@@ -45,21 +44,30 @@ impl Gameboard {
     where for<'r> Q: FnMut(&'r (&u32, &GameObject)) -> bool {
         self.game_objects.iter().find(querry)
     }
+
+    pub fn execute_operation(&mut self, id: u32, operation: GameboardObjectOperation) {
+        if let Some(object) = self.game_objects.get_mut(&id) {
+            match operation {
+                GameboardObjectOperation::Move(new_position) => object.position = new_position
+            }
+        }
+    }
 }
 
-// fn check_if_gameboard_object_is_selected(object: &Box<dyn GameboardObject>, coordinates: &Coordinates) -> bool {
-//     let object_size = object.get_size();
+fn check_if_object_area_contains_coordinates(object: &GameObject, coordinates: &Coordinates) -> bool {
+    let object_size = &object.size;
+    let object_position = &object.position;
     
-//     let object_coordinates = object.get_position();
-//     let object_bottom_coordinates = Coordinates::new(object_coordinates.x + object_size.width
-//         , object_coordinates.y + object_size.height);
+    let object_bottom_position = Coordinates::new(object_position.x + object_size.width
+        , object_position.y + object_size.height);
 
-//     if (coordinates.x >= object_coordinates.x && coordinates.x <= object_bottom_coordinates.x) &&
-//         (coordinates.y >= object_coordinates.y && coordinates.y <= object_bottom_coordinates.y) {
-//         return true;
-//     }
-//     return false;
-// }
+    if (coordinates.x >= object_position.x && coordinates.x <= object_bottom_position.x) &&
+        (coordinates.y >= object_position.y && coordinates.y <= object_bottom_position.y) {
+        return true;
+    }
+
+    false
+}
 
 #[cfg(test)]
 mod tests {
@@ -110,5 +118,38 @@ mod tests {
         let result = gameboard.get_object_by_id(1);
 
         assert_eq!(result.is_none(), true);
+    }
+
+    #[test]
+    fn gameboard_execute_operation_move_objects_position_changes() {
+        let mut gameboard = setup_gameboard_with_selectable_object();
+        let new_position = Coordinates::new(50.0, 50.0);
+        let operation = GameboardObjectOperation::Move(new_position);
+
+        gameboard.execute_operation(0, operation);
+        let object = gameboard.game_objects.get(&0).unwrap();
+        let expected_position = Coordinates::new(50.0, 50.0);
+
+        assert_eq!(object.position, expected_position);
+    }
+
+    #[test]
+    fn check_if_object_area_contains_coordinates_correct_coordinates_returns_true() {
+        let coordinates = Coordinates::new(25.0, 25.0);
+        let object = setup_selectable_object();
+
+        let result = check_if_object_area_contains_coordinates(&object, &coordinates);
+
+        assert_eq!(result, true);
+    }
+
+    #[test]
+    fn check_if_object_area_contains_coordinates_incorrect_coordinates_returns_false() {
+        let coordinates = Coordinates::new(60.0, 60.0);
+        let object = setup_selectable_object();
+
+        let result = check_if_object_area_contains_coordinates(&object, &coordinates);
+
+        assert_eq!(result, false);
     }
 }
