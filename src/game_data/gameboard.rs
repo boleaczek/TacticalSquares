@@ -72,23 +72,14 @@ fn check_if_object_area_contains_coordinates(object: &GameObject, coordinates: &
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn setup_selectable_object() -> GameObject {
-        GameObject::new(GameObjectType::Selectable, Coordinates::new(0.0, 0.0), Size::new(50.0, 50.0))
-    }
-
-    fn setup_gameboard_with_selectable_object() -> Gameboard {
-        let mut gameboard = Gameboard::new();
-        gameboard.add_object(setup_selectable_object());
-        gameboard
-    }
+    use crate::testing::setup;
 
     #[test]
     fn gameboard_add_object_next_id_changes() {
         let mut gameboard = Gameboard::new();
 
         let id_pre_add = gameboard.next_id;
-        gameboard.add_object(setup_selectable_object());
+        gameboard.add_object(setup::setup_selectable_object());
         let id_after_add = gameboard.next_id;
 
         assert_ne!(id_pre_add, id_after_add);
@@ -96,7 +87,7 @@ mod tests {
 
     #[test]
     fn gameboard_remove_object_correct_id_object_is_removed() {
-        let mut gameboard = setup_gameboard_with_selectable_object();
+        let mut gameboard = setup::setup_gameboard_with_selectable_object();
         gameboard.remove_object(0);
 
         let get_result = gameboard.game_objects.get(&0);
@@ -106,7 +97,7 @@ mod tests {
 
     #[test]
     fn gameboard_get_object_by_id_correct_id_returns_some() {
-        let gameboard = setup_gameboard_with_selectable_object();
+        let gameboard = setup::setup_gameboard_with_selectable_object();
         let result = gameboard.get_object_by_id(0);
 
         assert_eq!(result.is_some(), true);
@@ -114,7 +105,7 @@ mod tests {
 
     #[test]
     fn gameboard_get_object_by_id_incorrect_id_returns_none() {
-        let gameboard = setup_gameboard_with_selectable_object();
+        let gameboard = setup::setup_gameboard_with_selectable_object();
         let result = gameboard.get_object_by_id(1);
 
         assert_eq!(result.is_none(), true);
@@ -122,7 +113,7 @@ mod tests {
 
     #[test]
     fn gameboard_execute_operation_move_objects_position_changes() {
-        let mut gameboard = setup_gameboard_with_selectable_object();
+        let mut gameboard = setup::setup_gameboard_with_selectable_object();
         let new_position = Coordinates::new(50.0, 50.0);
         let operation = GameboardObjectOperation::Move(new_position);
 
@@ -136,7 +127,7 @@ mod tests {
     #[test]
     fn check_if_object_area_contains_coordinates_correct_coordinates_returns_true() {
         let coordinates = Coordinates::new(25.0, 25.0);
-        let object = setup_selectable_object();
+        let object = setup::setup_selectable_object();
 
         let result = check_if_object_area_contains_coordinates(&object, &coordinates);
 
@@ -146,7 +137,7 @@ mod tests {
     #[test]
     fn check_if_object_area_contains_coordinates_incorrect_coordinates_returns_false() {
         let coordinates = Coordinates::new(60.0, 60.0);
-        let object = setup_selectable_object();
+        let object = setup::setup_selectable_object();
 
         let result = check_if_object_area_contains_coordinates(&object, &coordinates);
 
