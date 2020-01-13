@@ -1,6 +1,8 @@
 use crate::game_controller::state_framework::GameManager;
 use crate::game_data::game_object::data::{Coordinates, Size};
 use crate::game_data::gameboard::{Gameboard, GameboardObjectOperation};
+use crate::game_data::game_object::GameObject;
+use crate::game_data::gameboard;
 
 pub enum UserInput {
     NoInputCursorPos(Coordinates),
@@ -19,13 +21,39 @@ pub struct SelectableMovementManager {
 }
 
 impl GameManager<GameState> for SelectableMovementManager {
-    fn process_state(&mut self, state: GameState) -> GameState {
-        unimplemented!();
+    fn process_state(&mut self, mut state: GameState) -> GameState {
+        state = SelectableMovementManager::process_selection(state);
+
+        return state;
     }
 }
 
 impl SelectableMovementManager {
+    fn process_selection(mut state: GameState) -> GameState {
+        let position;
+        if let UserInput::LeftMouse(pos) = &state.external_event {
+            position = pos
+        }
+        else {
+            return state;
+        }
+
+        let gameboard = &state.gameboard;
+
+        let querry = |object_data: &(&u32, &GameObject)| {
+            gameboard::check_if_object_area_contains_coordinates(object_data.1, position)
+        };
+
+        let object = gameboard.querry_object(querry);
+        
+        if let Some(object) = object {
+            state.current_selected_id = *object.0;
+        }
+
+        return state;
+    }
 }
+
 
 mod movement_handler {
     use crate::game_data::game_object::data::{Coordinates, Size};
@@ -176,6 +204,6 @@ mod tests {
         state = manager.process_state(state);
         let mut selected_id = state.current_selected_id;
 
-        assert_eq!(selected_id, 1);
+        assert_eq!(selected_id, 0);
     }
 }

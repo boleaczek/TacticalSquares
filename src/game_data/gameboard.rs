@@ -54,7 +54,7 @@ impl Gameboard {
     }
 }
 
-fn check_if_object_area_contains_coordinates(object: &GameObject, coordinates: &Coordinates) -> bool {
+pub fn check_if_object_area_contains_coordinates(object: &GameObject, coordinates: &Coordinates) -> bool {
     let object_size = &object.size;
     let object_position = &object.position;
     
