@@ -17,7 +17,7 @@ pub mod mocks;
 fn build_controller() -> game_controller::GameboardController {
     let mut gameboard = gameboard::Gameboard::new();
     let gameboard_object0 = gameboard::CharacterObject::new(gameboard::Coordinates::new(0.0, 0.0), gameboard::Size::new(50.0, 50.0));
-    let gameboard_object1 = gameboard::CharacterObject::new(gameboard::Coordinates::new(70.0, 0.0), gameboard::Size::new(50.0, 50.0));
+    let gameboard_object1 = gameboard::CharacterObject::new(gameboard::Coordinates::new(0.0, 0.0), gameboard::Size::new(50.0, 50.0));
     gameboard.add_object(gameboard::GameObjectType::Selectable, gameboard_object0);
     gameboard.add_object(gameboard::GameObjectType::Selectable, gameboard_object1);
     game_controller::GameboardController::new(gameboard)
@@ -25,7 +25,7 @@ fn build_controller() -> game_controller::GameboardController {
 
 fn main() {
     let opengl = OpenGL::V3_2;
-    let settings = WindowSettings::new("Tactical Squares", [512; 2])
+    let settings = WindowSettings::new("Tactical Squares", [1800; 2])
         .graphics_api(opengl)
         .exit_on_esc(true);
 

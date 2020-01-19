@@ -26,6 +26,11 @@ enum MovementDirection {
 struct MovementManager {
     current_position: Coordinates,
     destination: Coordinates,
+    vector: Coordinates,
+    increment: f64,
+    m: f64,
+    b: f64,
+    count: u32,
     direction_x: MovementDirection,
     direction_y: MovementDirection,
     pub id: u32
@@ -36,9 +41,25 @@ impl MovementManager {
         let direction_x = MovementManager::determine_direction(current_position.x, destination.x);
         let direction_y = MovementManager::determine_direction(current_position.y, destination.y);
 
+        let m = (destination.y - current_position.y) / (destination.x - current_position.x);
+        let b = ((current_position.x * m - current_position.y)) * (-1.0);
+        let increment = (destination.x - current_position.x) / 100.0;
+        let vector_x = destination.x - current_position.x;
+        let vector_y = destination.y - current_position.y;
+        let vector_c = ((vector_x * vector_x) + (vector_y * vector_y)).sqrt();
+        let vector = Coordinates::new(vector_x / vector_c, vector_y / vector_c);
+        println!("start: x: {}, y: {}", current_position.x, current_position.y);
+        println!("stop: x: {}, y: {}", destination.x, destination.y);
+        println!("vector: x: {}, y: {}", vector.x, vector.y);
+
         MovementManager {
             current_position,
             destination,
+            vector,
+            increment,
+            m,
+            b,
+            count: 0,
             direction_x,
             direction_y,
             id
@@ -46,45 +67,47 @@ impl MovementManager {
     }
 
     pub fn pool_move_command(&mut self) -> Option<GameboardObjectOperation> {
-        self.check_reached_status();
-        
-        let x = self.current_position.x;
-        let y = self.current_position.y;
+        // if self.count > 100 {
+        //     self.direction_x = MovementDirection::None;
+        //     self.direction_y = MovementDirection::None;
+        //     return None
+        // }
+        self.count += 1;
+        // let increment = (self.destination.x - self.current_position.x) / 1000.0;
+        if self.check_reached_status(self.vector.x) && self.check_reached_status(self.vector.y) {
+            return None;
+        }
 
-        let move_x = MovementManager::get_direction(&self.direction_x);
-        let move_y = MovementManager::get_direction(&self.direction_y);
+        // println!("Moves: {}, inc {}", self.count, increment);
+        // println!("current y: {}", self.current_position.y);
+            
+        let next_x = self.current_position.x + self.vector.x;
+        let next_y = self.current_position.y + self.vector.y;
+        // println!("x: {}, y: {}, m: {}, b: {}", next_x, next_y, self.m, self.b);
 
-        let next_position = Coordinates::new(x + move_x, y + move_y);
-
+        let next_position = Coordinates::new(next_x, next_y);
         self.current_position = next_position.clone();
-
+        println!("Ticks: {}", self.count);
         Some(GameboardObjectOperation::Move(next_position))
+        
     }
 
-    fn check_reached_status(&mut self) {
-        if MovementManager::is_reached(&self.direction_x, self.current_position.x, self.destination.x) {
-            self.direction_x = MovementDirection::None;
-        }
-
-        if MovementManager::is_reached(&self.direction_y, self.current_position.y, self.destination.y) {
-            self.direction_y = MovementDirection::None;
-        }
+    fn check_reached_status(&mut self, increment: f64) -> bool {
+MovementManager::is_reached(&self.direction_y, self.current_position.y, self.destination.y, increment) &&
+        MovementManager::is_reached(&self.direction_x, self.current_position.x, self.destination.x, increment)
     }
 
-    fn is_reached(direction: &MovementDirection, current_position: f64, destination: f64) -> bool {
-        match direction {
-            MovementDirection::Down => {
-                if current_position <= destination {
-                    return true;
-                }
-            },
-            MovementDirection::Up => {
-                if current_position >= destination {
-                    return true;
-                }
-            },
-            MovementDirection::None => return true
-        };
+    fn is_reached(direction: &MovementDirection, current_position: f64, destination: f64, increment: f64) -> bool {
+        if direction == &MovementDirection::Down {
+            if current_position <= destination{
+                return true;
+            }
+        }
+        else {
+            if current_position >= destination{
+                return true;
+            }
+        }
         return false;
     }
 
