@@ -43,13 +43,6 @@ pub enum LineEquation {
     Curve{slope: f64, y_intercept: f64} // y = m * x + b
 }
 
-#[derive(PartialEq, Debug)]
-pub struct Vector {
-    a: Coordinates,
-    b: Coordinates,
-    magnitude: f64
-}
-
 impl LineEquation {
     pub fn get_line_equation(a: &Coordinates, b: &Coordinates) -> LineEquation {
         if a.x == b.x {
@@ -112,6 +105,39 @@ impl LineEquation {
     fn curve_y_intersection(slope: f64, y_intercept: f64, y: f64) -> Coordinates {
         let x = (y_intercept - y) / slope * -1.0;
         Coordinates::new(x, y)
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Vector {
+    x: f64,
+    y: f64,
+    magnitude: f64
+}
+
+impl Vector {
+    fn get_vector(a: &Coordinates, b: &Coordinates) -> Vector {
+        let x = b.x - a.x; 
+        let y = b.y - a.y;
+        let magnitude = (x * x + y * y).sqrt();
+        
+        Vector {
+            x,
+            y,
+            magnitude
+        }
+    }
+
+    fn to_unit_vector(vector: &Vector) -> Vector {
+        let x = vector.x / vector.magnitude;
+        let y = vector.y / vector.magnitude;
+        let magnitude = 1.0;
+
+        Vector {
+            x,
+            y,
+            magnitude
+        }
     }
 }
 
@@ -212,5 +238,26 @@ mod tests {
         let expected = Coordinates::new(0.5, 2.0);
 
         assert_eq!(result.unwrap(), expected);
+    }
+
+    #[test]
+    fn vector_get_vector() {
+        let a = Coordinates::new(2.0, 3.0);
+        let b = Coordinates::new(6.0, 8.0);
+
+        let vector = Vector::get_vector(&a, &b);
+        let expected = Vector{x: 4.0, y: 5.0, magnitude: 6.4031242374328485};
+
+        assert_eq!(vector, expected);
+    }
+
+    #[test]
+    fn vector_get_unit_vector() {
+        let vector = Vector{x: 4.0, y: 5.0, magnitude: 6.4031242374328485};
+        
+        let unit_vector = Vector::to_unit_vector(&vector);
+        let expected = Vector{x: 0.6246950475544243, y: 0.7808688094430304, magnitude: 1.0};
+
+        assert_eq!(unit_vector, expected);
     }
 }
