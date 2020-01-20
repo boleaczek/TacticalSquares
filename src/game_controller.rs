@@ -74,7 +74,7 @@ impl MovementManager {
         // }
         self.count += 1;
         // let increment = (self.destination.x - self.current_position.x) / 1000.0;
-        if self.check_reached_status(self.vector.x) && self.check_reached_status(self.vector.y) {
+        if self.check_reached_status(self.current_position.x) && self.check_reached_status(self.current_position.y) {
             return None;
         }
 
@@ -93,20 +93,14 @@ impl MovementManager {
     }
 
     fn check_reached_status(&mut self, increment: f64) -> bool {
-MovementManager::is_reached(&self.direction_y, self.current_position.y, self.destination.y, increment) &&
+        MovementManager::is_reached(&self.direction_y, self.current_position.y, self.destination.y, increment) &&
         MovementManager::is_reached(&self.direction_x, self.current_position.x, self.destination.x, increment)
     }
 
     fn is_reached(direction: &MovementDirection, current_position: f64, destination: f64, increment: f64) -> bool {
-        if direction == &MovementDirection::Down {
-            if current_position <= destination{
-                return true;
-            }
-        }
-        else {
-            if current_position >= destination{
-                return true;
-            }
+        println!("{}    {}", current_position, destination);
+        if (current_position as u32) == (destination as u32){
+            return true;
         }
         return false;
     }
