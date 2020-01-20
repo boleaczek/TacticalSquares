@@ -13,6 +13,7 @@ pub mod game_controller;
 pub mod gameboard_view;
 pub mod game_data;
 pub mod testing;
+pub mod algebra_basics;
 
 // fn build_controller() -> game_controller::GameboardController {
 //     let mut gameboard = gameboard::Gameboard::new();
