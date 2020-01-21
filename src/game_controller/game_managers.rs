@@ -46,8 +46,6 @@ where S: BasicStateContainer {
     return state;
 }
 
-
-
 mod movement_handler {
     use crate::algebra_basics::{Coordinates, Size};
     use crate::game_data::gameboard::GameboardObjectOperation;
@@ -163,7 +161,7 @@ mod tests {
     use crate::algebra_basics::{Coordinates, Size};
 
     #[test]
-    fn selectable_movement_manager_right_click_coordinates_change() {
+    fn process_selection_right_click_coordinates_change() {
         let mut state = setup::setup_game_state_with_one_object();
         state.basic_state.external_event = UserInput::RightMouse(Coordinates::new(50.0, 50.0));
 
@@ -172,7 +170,7 @@ mod tests {
     }
 
     #[test]
-    fn selectable_movement_manager_left_click_on_selectable_selected_id_changes() {
+    fn process_selection_left_click_on_selectable_selected_id_changes() {
         let mut state = setup::setup_game_state_with_one_object();
         let mut new_object = GameObject::new(GameObjectType::Selectable, Coordinates::new(100.0, 100.0), Size::new(50.0, 50.0));
         
@@ -186,7 +184,7 @@ mod tests {
     }
 
     #[test]
-    fn selectable_movement_manager_left_click_on_non_selectable_selected_id_doesent_change() {
+    fn process_selection_manager_left_click_on_non_selectable_selected_id_doesent_change() {
         let mut state = setup::setup_game_state_with_one_object();
         
         state.basic_state.external_event = UserInput::LeftMouse(Coordinates::new(125.0, 125.0));
