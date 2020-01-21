@@ -2,7 +2,7 @@ use crate::algebra_basics::{Coordinates, Size};
 use crate::game_data::gameboard::{Gameboard, GameboardObjectOperation};
 use crate::game_data::game_object::GameObject;
 use crate::game_data::gameboard;
-use crate::game_controller::game_managers::movement_handler::MovementHandler;
+use crate::game_controller::movement_manager::MovementHandler;
 
 pub enum UserInput {
     NoInputCursorPos(Coordinates),
@@ -53,15 +53,6 @@ where S: BasicStateContainer {
     unimplemented!()
 }
 
-mod movement_handler {
-    use crate::algebra_basics::{Coordinates, Size};
-    use crate::game_data::gameboard::GameboardObjectOperation;
-
-    pub struct MovementHandler {
-
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -82,13 +73,13 @@ mod tests {
     #[test]
     fn process_selection_left_click_on_selectable_selected_id_changes() {
         let mut state = setup::setup_game_state_with_one_object();
-        let mut new_object = GameObject::new(GameObjectType::Selectable, Coordinates::new(100.0, 100.0), Size::new(50.0, 50.0));
+        let new_object = GameObject::new(GameObjectType::Selectable, Coordinates::new(100.0, 100.0), Size::new(50.0, 50.0));
         
         state.basic_state.gameboard.add_object(new_object);
         state.basic_state.external_event = UserInput::LeftMouse(Coordinates::new(125.0, 125.0));
 
         state = process_selection(state);
-        let mut selected_id = state.basic_state.current_selected_id;
+        let selected_id = state.basic_state.current_selected_id;
 
         assert_eq!(selected_id, 1);
     }
@@ -100,7 +91,7 @@ mod tests {
         state.basic_state.external_event = UserInput::LeftMouse(Coordinates::new(125.0, 125.0));
 
         state = process_selection(state);
-        let mut selected_id = state.basic_state.current_selected_id;
+        let selected_id = state.basic_state.current_selected_id;
 
         assert_eq!(selected_id, 0);
     }
