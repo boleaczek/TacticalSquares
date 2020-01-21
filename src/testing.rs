@@ -1,8 +1,8 @@
 pub mod setup {
-    use crate::game_data::game_object::GameObject;
-    use crate::game_data::game_object::data::{GameObjectType, Coordinates, Size};
+    use crate::game_data::game_object::{GameObject, GameObjectType};
+    use crate::algebra_basics::{Coordinates, Size};
     use crate::game_data::gameboard::Gameboard;
-    use crate::game_controller::game_managers::{GameState, UserInput};
+    use crate::game_controller::game_managers::{BasicState, BasicStateContainer, UserInput};
 
     pub fn setup_selectable_object() -> GameObject {
         GameObject::new(GameObjectType::Selectable, Coordinates::new(0.0, 0.0), Size::new(50.0, 50.0))
@@ -14,12 +14,26 @@ pub mod setup {
         gameboard
     }
 
-    pub fn setup_game_state_with_one_object() -> GameState {
+    pub struct MockMainState {
+        pub basic_state: BasicState
+    }
+
+    impl BasicStateContainer for MockMainState {
+        fn get_basic_state(&mut self) -> &mut BasicState {
+            return &mut self.basic_state;
+        }
+    }
+
+    pub fn setup_game_state_with_one_object() -> MockMainState {
         let mut gameboard = setup_gameboard_with_selectable_object();
-        GameState {
+        let basic = BasicState {
             current_selected_id: 0,
             external_event: UserInput::NoInputCursorPos(Coordinates::new(0.0, 0.0)),
             gameboard: gameboard
+        };
+
+        MockMainState {
+            basic_state: basic
         }
     }
 }

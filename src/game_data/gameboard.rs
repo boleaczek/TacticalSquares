@@ -4,7 +4,8 @@ use std::boxed::Box;
 
 use crate::game_data::game_object;
 use crate::game_data::game_object::GameObject;
-use crate::game_data::game_object::data::*;
+use crate::game_data::game_object::GameObjectType;
+use crate::algebra_basics::{Coordinates, Size};
 
 pub enum GameboardObjectOperation {
     Move(Coordinates)

@@ -1,5 +1,4 @@
-use crate::game_controller::state_framework::GameManager;
-use crate::game_data::game_object::data::{Coordinates, Size};
+use crate::algebra_basics::{Coordinates, Size};
 use crate::game_data::gameboard::{Gameboard, GameboardObjectOperation};
 use crate::game_data::game_object::GameObject;
 use crate::game_data::gameboard;
@@ -10,53 +9,47 @@ pub enum UserInput {
     RightMouse(Coordinates)
 }
 
-pub struct GameState {
+pub struct BasicState {
     pub current_selected_id: u32,
     pub external_event: UserInput,
     pub gameboard: Gameboard
 }
 
-pub struct SelectableMovementManager {
+pub trait BasicStateContainer {
+    fn get_basic_state(&mut self) -> &mut BasicState;
+}
+
+fn process_selection<S>(mut state: S) -> S
+where S: BasicStateContainer {
+    let basic_state = state.get_basic_state();
+
+    let position;
+    if let UserInput::LeftMouse(pos) = &basic_state.external_event {
+        position = pos
+    }
+    else {
+        return state;
+    }
+
+    let gameboard = &basic_state.gameboard;
+
+    let querry = |object_data: &(&u32, &GameObject)| {
+        gameboard::check_if_object_area_contains_coordinates(object_data.1, position)
+    };
+
+    let object = gameboard.querry_object(querry);
     
-}
-
-impl GameManager<GameState> for SelectableMovementManager {
-    fn process_state(&mut self, mut state: GameState) -> GameState {
-        state = SelectableMovementManager::process_selection(state);
-
-        return state;
+    if let Some(object) = object {
+        basic_state.current_selected_id = *object.0;
     }
+
+    return state;
 }
 
-impl SelectableMovementManager {
-    fn process_selection(mut state: GameState) -> GameState {
-        let position;
-        if let UserInput::LeftMouse(pos) = &state.external_event {
-            position = pos
-        }
-        else {
-            return state;
-        }
-
-        let gameboard = &state.gameboard;
-
-        let querry = |object_data: &(&u32, &GameObject)| {
-            gameboard::check_if_object_area_contains_coordinates(object_data.1, position)
-        };
-
-        let object = gameboard.querry_object(querry);
-        
-        if let Some(object) = object {
-            state.current_selected_id = *object.0;
-        }
-
-        return state;
-    }
-}
 
 
 mod movement_handler {
-    use crate::game_data::game_object::data::{Coordinates, Size};
+    use crate::algebra_basics::{Coordinates, Size};
     use crate::game_data::gameboard::GameboardObjectOperation;
 
     #[derive(PartialEq, Debug)]
@@ -166,43 +159,40 @@ mod movement_handler {
 mod tests {
     use super::*;
     use crate::testing::setup;
-    use crate::game_data::game_object::GameObject;
-    use crate::game_data::game_object::data::GameObjectType;
+    use crate::game_data::game_object::{GameObject, GameObjectType};
+    use crate::algebra_basics::{Coordinates, Size};
 
     #[test]
     fn selectable_movement_manager_right_click_coordinates_change() {
         let mut state = setup::setup_game_state_with_one_object();
-        let mut manager = SelectableMovementManager{};
-        state.external_event = UserInput::RightMouse(Coordinates::new(50.0, 50.0));
+        state.basic_state.external_event = UserInput::RightMouse(Coordinates::new(50.0, 50.0));
 
-        let state = manager.process_state(state);
+        let state = process_selection(state);
         unimplemented!();
     }
 
     #[test]
     fn selectable_movement_manager_left_click_on_selectable_selected_id_changes() {
-        let mut manager = SelectableMovementManager{};
         let mut state = setup::setup_game_state_with_one_object();
         let mut new_object = GameObject::new(GameObjectType::Selectable, Coordinates::new(100.0, 100.0), Size::new(50.0, 50.0));
         
-        state.gameboard.add_object(new_object);
-        state.external_event = UserInput::LeftMouse(Coordinates::new(125.0, 125.0));
+        state.basic_state.gameboard.add_object(new_object);
+        state.basic_state.external_event = UserInput::LeftMouse(Coordinates::new(125.0, 125.0));
 
-        state = manager.process_state(state);
-        let mut selected_id = state.current_selected_id;
+        state = process_selection(state);
+        let mut selected_id = state.basic_state.current_selected_id;
 
         assert_eq!(selected_id, 1);
     }
 
     #[test]
     fn selectable_movement_manager_left_click_on_non_selectable_selected_id_doesent_change() {
-        let mut manager = SelectableMovementManager{};
         let mut state = setup::setup_game_state_with_one_object();
         
-        state.external_event = UserInput::LeftMouse(Coordinates::new(125.0, 125.0));
+        state.basic_state.external_event = UserInput::LeftMouse(Coordinates::new(125.0, 125.0));
 
-        state = manager.process_state(state);
-        let mut selected_id = state.current_selected_id;
+        state = process_selection(state);
+        let mut selected_id = state.basic_state.current_selected_id;
 
         assert_eq!(selected_id, 0);
     }
