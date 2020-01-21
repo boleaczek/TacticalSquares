@@ -29,7 +29,8 @@ pub mod setup {
         let basic = BasicState {
             current_selected_id: 0,
             external_event: UserInput::NoInputCursorPos(Coordinates::new(0.0, 0.0)),
-            gameboard: gameboard
+            gameboard: gameboard,
+            movements: vec!()
         };
 
         MockMainState {
