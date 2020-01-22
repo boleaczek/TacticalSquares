@@ -110,13 +110,13 @@ impl LineEquation {
 
 #[derive(PartialEq, Debug)]
 pub struct Vector {
-    x: f64,
-    y: f64,
+    pub x: f64,
+    pub y: f64,
     magnitude: f64
 }
 
 impl Vector {
-    fn get_vector(a: &Coordinates, b: &Coordinates) -> Vector {
+    pub fn get_vector(a: &Coordinates, b: &Coordinates) -> Vector {
         let x = b.x - a.x; 
         let y = b.y - a.y;
         let magnitude = (x * x + y * y).sqrt();
@@ -128,7 +128,7 @@ impl Vector {
         }
     }
 
-    fn to_unit_vector(vector: &Vector) -> Vector {
+    pub fn to_unit_vector(vector: &Vector) -> Vector {
         let x = vector.x / vector.magnitude;
         let y = vector.y / vector.magnitude;
         let magnitude = 1.0;
