@@ -1,4 +1,6 @@
 pub mod setup {
+    use std::collections::HashMap;
+    
     use crate::game_data::game_object::{GameObject, GameObjectType};
     use crate::algebra_basics::{Coordinates, Size};
     use crate::game_data::gameboard::Gameboard;
@@ -30,7 +32,7 @@ pub mod setup {
             current_selected_id: 0,
             external_event: UserInput::NoInputCursorPos(Coordinates::new(0.0, 0.0)),
             gameboard: gameboard,
-            movements: vec!()
+            movements: HashMap::new()
         };
 
         MockMainState {

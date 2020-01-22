@@ -53,6 +53,15 @@ impl Gameboard {
             }
         }
     }
+
+    pub fn get_all_objects(&self) -> Vec<&GameObject> {
+        let mut objects = Vec::new();
+        for (_, object) in &self.game_objects {
+            objects.push(object);
+        }
+
+        return objects;
+    }
 }
 
 pub fn check_if_object_area_contains_coordinates(object: &GameObject, coordinates: &Coordinates) -> bool {
