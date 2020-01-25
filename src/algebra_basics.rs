@@ -50,14 +50,14 @@ pub enum LineEquation {
 }
 
 impl LineEquation {
-    pub fn unwrap_to_vertical(&mut self) -> f64 {
+    pub fn unwrap_to_vertical(&self) -> f64 {
         if let LineEquation::Vertical(x) = self {
             return *x;
         }
         panic!();
     }
 
-    pub fn unwrap_to_horizontal(&mut self) -> f64 {
+    pub fn unwrap_to_horizontal(&self) -> f64 {
         if let LineEquation::Horizontal(y) = self {
             return *y;
         }
@@ -144,6 +144,13 @@ impl SquareLineEquations {
             y_0: LineEquation::Horizontal(position.y),
             y_1: LineEquation::Horizontal(position.y + size.height)
         }
+    }
+
+    pub fn to_floats(&self) -> (f64, f64, f64, f64) {
+        (self.x_0.unwrap_to_vertical(), 
+        self.x_1.unwrap_to_vertical(), 
+        self.y_0.unwrap_to_horizontal(), 
+        self.y_1.unwrap_to_vertical())
     }
 }
 
