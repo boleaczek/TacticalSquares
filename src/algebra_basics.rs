@@ -36,6 +36,12 @@ impl Size {
     }
 }
 
+fn get_middle(position: &Coordinates, size: &Size) -> Coordinates {
+    let x = position.x + size.width / 2.0;
+    let y = position.y + size.height / 2.0;
+    return Coordinates::new(x, y);
+}
+
 #[derive(PartialEq, Debug)]
 pub enum LineEquation {
     Vertical(f64), // x = constant
@@ -44,6 +50,20 @@ pub enum LineEquation {
 }
 
 impl LineEquation {
+    pub fn unwrap_to_vertical(&mut self) -> f64 {
+        if let LineEquation::Vertical(x) = self {
+            return *x;
+        }
+        panic!();
+    }
+
+    pub fn unwrap_to_horizontal(&mut self) -> f64 {
+        if let LineEquation::Horizontal(y) = self {
+            return *y;
+        }
+        panic!();
+    }
+
     pub fn get_line_equation(a: &Coordinates, b: &Coordinates) -> LineEquation {
         if a.x == b.x {
             return LineEquation::Vertical(a.x);
@@ -59,11 +79,11 @@ impl LineEquation {
         LineEquation::Curve{slope, y_intercept}
     }
 
-    pub fn get_point_of_intersection(line_a: LineEquation, line_b: LineEquation) -> Option<Coordinates> {
+    pub fn get_point_of_intersection(line_a: &LineEquation, line_b: &LineEquation) -> Option<Coordinates> {
         match line_a {
-            LineEquation::Vertical(x) => return LineEquation::calculate_intersection_for_vertical(x, &line_b),
-            LineEquation::Horizontal(y) => return LineEquation::calculate_intersection_for_horizontal(y, &line_b),
-            LineEquation::Curve{slope, y_intercept} => return LineEquation::calculate_intersection_for_curve(slope, y_intercept, &line_b)
+            LineEquation::Vertical(x) => return LineEquation::calculate_intersection_for_vertical(*x, &line_b),
+            LineEquation::Horizontal(y) => return LineEquation::calculate_intersection_for_horizontal(*y, &line_b),
+            LineEquation::Curve{slope, y_intercept} => return LineEquation::calculate_intersection_for_curve(*slope, *y_intercept, &line_b)
         }
     }
 
@@ -105,6 +125,25 @@ impl LineEquation {
     fn curve_y_intersection(slope: f64, y_intercept: f64, y: f64) -> Coordinates {
         let x = (y_intercept - y) / slope * -1.0;
         Coordinates::new(x, y)
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct SquareLineEquations {
+    pub x_0: LineEquation,
+    pub x_1: LineEquation,
+    pub y_0: LineEquation,
+    pub y_1: LineEquation
+}
+
+impl SquareLineEquations {
+    pub fn get_square_line_equations(position: &Coordinates, size: &Size) -> SquareLineEquations {
+        SquareLineEquations {
+            x_0: LineEquation::Vertical(position.x),
+            x_1: LineEquation::Vertical(position.x + size.width),
+            y_0: LineEquation::Horizontal(position.y),
+            y_1: LineEquation::Horizontal(position.y + size.height)
+        }
     }
 }
 
@@ -183,7 +222,7 @@ mod tests {
         let curve_a = LineEquation::Curve{slope: 2.0, y_intercept: 0.0};
         let curve_b = LineEquation::Curve{slope: -1.0, y_intercept: 6.0};
 
-        let result = LineEquation::get_point_of_intersection(curve_a, curve_b);
+        let result = LineEquation::get_point_of_intersection(&curve_a, &curve_b);
         let expected = Coordinates::new(2.0, 4.0);
         
         assert_eq!(result.unwrap(), expected);
@@ -194,7 +233,7 @@ mod tests {
         let line_a = LineEquation::Vertical(0.0);
         let line_b = LineEquation::Vertical(1.0);
 
-        let result = LineEquation::get_point_of_intersection(line_a, line_b);
+        let result = LineEquation::get_point_of_intersection(&line_a, &line_b);
 
         assert_eq!(result.is_none(), true);
     }
@@ -204,7 +243,7 @@ mod tests {
         let line_a = LineEquation::Horizontal(0.0);
         let line_b = LineEquation::Horizontal(1.0);
 
-        let result = LineEquation::get_point_of_intersection(line_a, line_b);
+        let result = LineEquation::get_point_of_intersection(&line_a, &line_b);
         assert_eq!(result.is_none(), true);
     }
 
@@ -213,7 +252,7 @@ mod tests {
         let line_a = LineEquation::Vertical(1.0);
         let line_b = LineEquation::Horizontal(2.0);
 
-        let result = LineEquation::get_point_of_intersection(line_a, line_b);
+        let result = LineEquation::get_point_of_intersection(&line_a, &line_b);
         let expected = Coordinates::new(1.0, 2.0);
         assert_eq!(result.unwrap(), expected);
     }
@@ -223,7 +262,7 @@ mod tests {
         let curve = LineEquation::Curve{slope: 2.0, y_intercept: 1.0};
         let line = LineEquation::Vertical(2.0);
 
-        let result = LineEquation::get_point_of_intersection(curve, line);
+        let result = LineEquation::get_point_of_intersection(&curve, &line);
         let expected = Coordinates::new(2.0, 5.0);
 
         assert_eq!(result.unwrap(), expected);
@@ -234,7 +273,7 @@ mod tests {
         let curve = LineEquation::Curve{slope: 2.0, y_intercept: 1.0};
         let line = LineEquation::Horizontal(2.0);
 
-        let result = LineEquation::get_point_of_intersection(curve, line);
+        let result = LineEquation::get_point_of_intersection(&curve, &line);
         let expected = Coordinates::new(0.5, 2.0);
 
         assert_eq!(result.unwrap(), expected);
@@ -259,5 +298,32 @@ mod tests {
         let expected = Vector{x: 0.6246950475544243, y: 0.7808688094430304, magnitude: 1.0};
 
         assert_eq!(unit_vector, expected);
+    }
+
+    #[test]
+    fn square_line_equations_get_square_line_equations_returns_correct_equation() {
+        let position = Coordinates::new(50.0, 50.0);
+        let size = Size::new(50.0, 50.0);
+        
+        let square_line_equation = SquareLineEquations::get_square_line_equations(&position, &size);
+        let expected = SquareLineEquations {
+            x_0: LineEquation::Vertical(50.0),
+            x_1: LineEquation::Vertical(100.0),
+            y_0: LineEquation::Horizontal(50.0),
+            y_1: LineEquation::Horizontal(100.0)
+        };
+
+        assert_eq!(square_line_equation, expected);
+    }
+
+    #[test]
+    fn get_middle_returns_correct_coordinates() {
+        let position = Coordinates::new(0.0, 0.0);
+        let size = Size::new(50.0, 50.0);
+
+        let middle = get_middle(&position, &size);
+        let expected = Coordinates::new(25.0, 25.0);
+
+        assert_eq!(middle, expected);
     }
 }
