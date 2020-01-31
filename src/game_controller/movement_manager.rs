@@ -48,31 +48,34 @@ impl MovementHandler {
     }
 }
 
-#[derive(PartialEq, Debug)]
-enum MovementDirection {
-    None,
-    Forward,
-    Backward
-}
 
-impl MovementDirection {
-    fn get(a: f64, b: f64) -> MovementDirection {
-        if a < b {
-            return MovementDirection::Forward;
-        }
-        else if a > b {
-            return MovementDirection::Backward;
-        }
-        else {
-            return MovementDirection::None;
-        }
-    }
-}
 
 pub mod pathfinding {
 use crate::algebra_basics::{Coordinates, LineEquation, Vector, Size, RectangleLineEquations};
 use crate::game_data::gameboard::Gameboard;
-    
+use crate::game_data::game_object::GameObject;
+
+    #[derive(PartialEq, Debug)]
+    enum MovementDirection {
+        None,
+        Forward,
+        Backward
+    }
+
+    impl MovementDirection {
+        fn get(a: f64, b: f64) -> MovementDirection {
+            if a < b {
+                return MovementDirection::Forward;
+            }
+            else if a > b {
+                return MovementDirection::Backward;
+            }
+            else {
+                return MovementDirection::None;
+            }
+        }
+    }
+
     pub fn find_path(start: &Coordinates, destination: &Coordinates, gameboard: &Gameboard) -> Vec<Coordinates> {
         let game_objects = gameboard.get_all_objects();
         let line_equation = LineEquation::get_line_equation(start, destination);
@@ -84,6 +87,13 @@ use crate::game_data::gameboard::Gameboard;
 
         points.push(destination.clone());
         points
+    }
+
+    fn check_if_object_is_an_obstacle(line_equation: &LineEquation,
+        direction_x: &MovementDirection,
+        direction_y: MovementDirection,
+        object: &GameObject) -> bool {
+        unimplemented!();
     }
 
     #[cfg(test)]
@@ -135,6 +145,90 @@ use crate::game_data::gameboard::Gameboard;
             let path = find_path(&Coordinates::new(100.0, 150.0), &Coordinates::new(100.0, 200.0), &gameboard);
             assert_eq!(path.len(), 1);
         }
+
+        #[test]
+        fn movmement_direction_a_lower_than_b_forward_returned() {
+            let direction = MovementDirection::get(0.0, 5.0);
+            let expected_direction = MovementDirection::Forward;
+            
+            assert_eq!(direction, expected_direction);
+        }
+    
+        #[test]
+        fn movmement_direction_a_higher_than_b_forward_returned() {
+            let direction = MovementDirection::get(0.5, 0.0);
+            let expected_direction = MovementDirection::Backward;
+            
+            assert_eq!(direction, expected_direction);
+        }
+    
+        #[test]
+        fn movmement_direction_a_same_as_b_forward_returned() {
+            let direction = MovementDirection::get(0.0, 0.0);
+            let expected_direction = MovementDirection::None;
+            
+            assert_eq!(direction, expected_direction);
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_forward_y_none_obstacle_object_provided_returns_true() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_forward_y_none_non_obstacle_object_provided_returns_false() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_forward_y_forward_obstacle_object_provided_returns_true() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_forward_y_forward_non_obstacle_object_provided_returns_false() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_forward_y_backward_obstacle_object_provided_returns_true() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_forward_y_backward_non_obstacle_object_provided_returns_false() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_backward_y_none_obstacle_object_provided_returns_true() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_backward_y_none_non_obstacle_object_provided_returns_false() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_backward_y_forward_obstacle_object_provided_returns_true() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_backward_y_forward_non_obstacle_object_provided_returns_false() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_backward_y_backward_obstacle_object_provided_returns_true() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn check_if_object_is_an_obstacle_x_backward_y_backwawrd_non_obstacle_object_provided_returns_false() {
+            unimplemented!();
+        }
     }
 }
 
@@ -169,29 +263,5 @@ use super::*;
 
         assert_eq!(movement_handler.poll_movement().is_some(), true);
         assert_eq!(movement_handler.poll_movement().is_none(), true);
-    }
-
-    #[test]
-    fn movmement_direction_a_lower_than_b_forward_returned() {
-        let direction = MovementDirection::get(0.0, 5.0);
-        let expected_direction = MovementDirection::Forward;
-        
-        assert_eq!(direction, expected_direction);
-    }
-
-    #[test]
-    fn movmement_direction_a_higher_than_b_forward_returned() {
-        let direction = MovementDirection::get(0.5, 0.0);
-        let expected_direction = MovementDirection::Backward;
-        
-        assert_eq!(direction, expected_direction);
-    }
-
-    #[test]
-    fn movmement_direction_a_same_as_b_forward_returned() {
-        let direction = MovementDirection::get(0.0, 0.0);
-        let expected_direction = MovementDirection::None;
-        
-        assert_eq!(direction, expected_direction);
     }
 }
