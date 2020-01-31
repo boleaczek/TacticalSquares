@@ -13,7 +13,7 @@ pub enum GameboardObjectOperation {
 }
 
 pub struct Gameboard {
-    game_objects: HashMap<u32, GameObject>,
+    pub game_objects: HashMap<u32, GameObject>,
     next_id: u32
 }
 

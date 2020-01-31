@@ -10,6 +10,7 @@ use opengl_graphics::{OpenGL, GlGraphics};
 use piston::input::RenderEvent;
 
 use std::collections::HashMap;
+use std::time;
 
 pub mod game_controller;
 pub mod gameboard_view;
@@ -23,9 +24,11 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
 use crate::algebra_basics::{Coordinates, Size};
 use crate::game_controller::game_managers::*;
 use crate::game_controller::utils::PistonEventTranslator;
+use crate::debug_utils::{DebugState, LineObject};
 
 struct MainState {
-    basic_state: BasicState
+    basic_state: BasicState,
+    debug_state: DebugState
 }
 
 impl BasicStateContainer for MainState {
@@ -48,8 +51,21 @@ fn build_state() -> MainState {
         movements: HashMap::new()
     };
 
+    let initial_line = LineObject {
+        a: Coordinates::new(0.0, 0.0),
+        b: Coordinates::new(0.0, 0.0)
+    };
+
+    let debug_state = DebugState {
+        debug_line: initial_line,
+        debug_enabled: false,
+        last_print_time: time::SystemTime::now(),
+        debug_tick_time: time::Duration::new(20, 0)
+    };
+
     MainState {
-        basic_state
+        basic_state,
+        debug_state
     }
 }
 
@@ -79,11 +95,17 @@ fn main() {
         state = process_selection(state);
         state = process_player_movement(state);
         state = proces_movement(state);
+        
+        // debug
+        state.debug_state = debug_utils::process_debug_line(&state.basic_state, state.debug_state);
+        state.debug_state = debug_utils::process_debug_enabled(&state.basic_state, state.debug_state);
+        debug_utils::print_object_positions_and_sizes(&state.basic_state, &mut state.debug_state);
 
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {
                 use graphics::{clear};
                 gameboard_view::render(state.get_basic_state().gameboard.get_all_objects(), &c, g);
+                gameboard_view::render_debug(&state.debug_state.debug_line, &c, g);
                 clear([1.0; 4], g);
             });
         }

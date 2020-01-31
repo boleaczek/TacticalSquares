@@ -5,7 +5,7 @@ pub mod utils {
     use crate::game_controller::game_managers::UserInput;
     use crate::algebra_basics::Coordinates;
     use piston::input::GenericEvent;
-    use piston::input::{Button, MouseButton};
+    use piston::input::{Button, MouseButton, Key};
     
     pub struct PistonEventTranslator {
         pub current_cursor_pos: Coordinates
@@ -26,6 +26,12 @@ pub mod utils {
                             _ => {}
                         }
                         
+                    },
+                    Button::Keyboard(button) => {
+                        match button {
+                            Key::D => return UserInput::D,
+                            _ => {}
+                        }
                     },
                     _ => {}
                 }

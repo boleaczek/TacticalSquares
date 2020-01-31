@@ -9,7 +9,19 @@ use crate::game_controller::movement_manager::MovementHandler;
 pub enum UserInput {
     NoInputCursorPos(Coordinates),
     LeftMouse(Coordinates),
-    RightMouse(Coordinates)
+    RightMouse(Coordinates),
+    D
+}
+
+impl UserInput {
+    pub fn get_coordinates_if_mouse_input(&self) -> Option<&Coordinates> {
+        match self {
+            UserInput::NoInputCursorPos(coordinates) => return Some(coordinates),
+            UserInput::LeftMouse(coordinates) => return Some(coordinates),
+            UserInput::RightMouse(coordinates) => return Some(coordinates),
+            _ => return None
+        }
+    }
 }
 
 pub struct BasicState {
