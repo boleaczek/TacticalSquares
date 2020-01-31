@@ -86,57 +86,6 @@ use crate::game_data::gameboard::Gameboard;
         points
     }
 
-    #[derive(PartialEq, Debug)]
-    enum IntersectedSide {
-        X0,
-        X1,
-        Y0,
-        Y1,
-        None
-    }
-
-    fn check_if_line_intersects_with_object(line: &LineEquation, square_line_equations: &RectangleLineEquations) -> IntersectedSide {
-        let floats = square_line_equations.to_floats();
-
-        if check_if_line_intersects_object_within_opposite_line(&line, &square_line_equations.x_0, floats.2, floats.3) {
-            return IntersectedSide::X0;
-        }
-
-        if check_if_line_intersects_object_within_opposite_line(&line, &square_line_equations.x_1, floats.2, floats.3) {
-            return IntersectedSide::X1;
-        }
-
-        if check_if_line_intersects_object_within_opposite_line(&line, &square_line_equations.y_0, floats.0, floats.1) {
-            return IntersectedSide::Y0;
-        }
-
-        if check_if_line_intersects_object_within_opposite_line(&line, &square_line_equations.y_1, floats.0, floats.1) {
-            return IntersectedSide::Y1;
-        }
-
-        return IntersectedSide::None;
-    }
-
-    fn check_if_line_intersects_object_within_opposite_line(line_a: &LineEquation, 
-        line_b: &LineEquation,
-        left_opposite: f64,
-        right_opposite: f64) -> bool {
-        
-        if let Some(intersection_point) = LineEquation::get_point_of_intersection(line_a, line_b) {
-            match line_b {
-                LineEquation::Horizontal(y) => {
-                    return intersection_point.y >= left_opposite && intersection_point.y <= right_opposite;
-                },
-                LineEquation::Vertical(x) => {
-                    return intersection_point.x >= left_opposite && intersection_point.x <= right_opposite;
-                },
-                _ => {}
-            }
-        }
-
-        return false;
-    }
-
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -157,74 +106,6 @@ use crate::game_data::gameboard::Gameboard;
                 y_0: LineEquation::Horizontal(5.0),
                 y_1: LineEquation::Horizontal(10.0)
             }
-        }
-
-        #[test]
-        fn check_if_line_intersects_with_rectangle_intersecting_horizontal_line_provided_returns_true() {
-            let equation = setup_rectangle_line_equations();
-            let line = LineEquation::Horizontal(7.0);
-
-            let result = check_if_line_intersects_with_object(&line, &equation);
-
-            assert_eq!(result, IntersectedSide::X0);
-        }
-
-        #[test]
-        fn check_if_line_intersects_with_rectangle_non_intersecting_horizontal_line_provided_returns_false() {
-            let equation = setup_rectangle_line_equations();
-            let line = LineEquation::Horizontal(2.0);
-            
-            let result = check_if_line_intersects_with_object(&line, &equation);
-
-            assert_eq!(result, IntersectedSide::None);
-        }
-
-        #[test]
-        fn check_if_line_intersects_with_rectangle_intersecting_vertical_line_provided_returns_true() {
-            let equation = setup_rectangle_line_equations();
-            let line = LineEquation::Vertical(7.0);
-
-            let result = check_if_line_intersects_with_object(&line, &equation);
-
-            assert_eq!(result, IntersectedSide::Y0);
-        }
-
-        #[test]
-        fn check_if_line_intersects_with_rectangle_non_intersecting_vertical_line_provided_returns_false() {
-            let equation = setup_rectangle_line_equations();
-            let line = LineEquation::Vertical(7.0);
-
-            let expected = LineEquation::Vertical(12.0);
-            let result = check_if_line_intersects_with_object(&line, &equation);
-            
-            assert_eq!(result, IntersectedSide::None);
-        }
-
-        #[test]
-        fn check_if_line_intersects_with_rectangle_intersecting_curve_line_provided_returns_true() {
-            let equation = setup_rectangle_line_equations();
-            let line = LineEquation::Curve {
-                slope: 2.0,
-                y_intercept: -7.0
-            };
-            
-            let expected = LineEquation::Horizontal(5.0);
-            let result = check_if_line_intersects_with_object(&line, &equation);
-
-            // assert_eq!(result.unwrap(), expected);
-        }
-
-        #[test]
-        fn check_if_line_intersects_with_rectangle_non_intersecting_curve_line_provided_returns_false() {
-            let equation = setup_rectangle_line_equations();
-            let line = LineEquation::Curve {
-                slope: 4.0,
-                y_intercept: -5.0
-            };
-            
-            let result = check_if_line_intersects_with_object(&line, &equation);
-
-            // assert_eq!(result.is_none(), true);
         }
 
         #[test]
