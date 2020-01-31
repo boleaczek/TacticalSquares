@@ -129,16 +129,16 @@ impl LineEquation {
 }
 
 #[derive(PartialEq, Debug)]
-pub struct SquareLineEquations {
+pub struct RectangleLineEquations {
     pub x_0: LineEquation,
     pub x_1: LineEquation,
     pub y_0: LineEquation,
     pub y_1: LineEquation
 }
 
-impl SquareLineEquations {
-    pub fn get_square_line_equations(position: &Coordinates, size: &Size) -> SquareLineEquations {
-        SquareLineEquations {
+impl RectangleLineEquations {
+    pub fn get_square_line_equations(position: &Coordinates, size: &Size) -> RectangleLineEquations {
+        RectangleLineEquations {
             x_0: LineEquation::Vertical(position.x),
             x_1: LineEquation::Vertical(position.x + size.width),
             y_0: LineEquation::Horizontal(position.y),
@@ -150,7 +150,7 @@ impl SquareLineEquations {
         (self.x_0.unwrap_to_vertical(), 
         self.x_1.unwrap_to_vertical(), 
         self.y_0.unwrap_to_horizontal(), 
-        self.y_1.unwrap_to_vertical())
+        self.y_1.unwrap_to_horizontal())
     }
 }
 
@@ -312,8 +312,8 @@ mod tests {
         let position = Coordinates::new(50.0, 50.0);
         let size = Size::new(50.0, 50.0);
         
-        let square_line_equation = SquareLineEquations::get_square_line_equations(&position, &size);
-        let expected = SquareLineEquations {
+        let square_line_equation = RectangleLineEquations::get_square_line_equations(&position, &size);
+        let expected = RectangleLineEquations {
             x_0: LineEquation::Vertical(50.0),
             x_1: LineEquation::Vertical(100.0),
             y_0: LineEquation::Horizontal(50.0),
