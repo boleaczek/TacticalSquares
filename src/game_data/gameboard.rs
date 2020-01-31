@@ -6,6 +6,7 @@ use crate::game_data::game_object;
 use crate::game_data::game_object::GameObject;
 use crate::game_data::game_object::GameObjectType;
 use crate::algebra_basics::{Coordinates, Size};
+use crate::algebra_basics;
 
 pub enum GameboardObjectOperation {
     Move(Coordinates)
@@ -68,15 +69,7 @@ pub fn check_if_object_area_contains_coordinates(object: &GameObject, coordinate
     let object_size = &object.size;
     let object_position = &object.position;
     
-    let object_bottom_position = Coordinates::new(object_position.x + object_size.width
-        , object_position.y + object_size.height);
-
-    if (coordinates.x >= object_position.x && coordinates.x <= object_bottom_position.x) &&
-        (coordinates.y >= object_position.y && coordinates.y <= object_bottom_position.y) {
-        return true;
-    }
-
-    false
+    return algebra_basics::check_if_point_is_contained_within_rectangle(coordinates, object_position, object_size);
 }
 
 #[cfg(test)]

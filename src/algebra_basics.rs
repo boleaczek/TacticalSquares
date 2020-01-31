@@ -36,6 +36,17 @@ impl Size {
     }
 }
 
+pub fn check_if_point_is_contained_within_rectangle(point: &Coordinates, rectangle_upper_vertex: &Coordinates, size: &Size) -> bool {
+    let rectangle_bottom_vertex = Coordinates::new(rectangle_upper_vertex.x + size.width, rectangle_upper_vertex.y + size.height);
+
+    if point.x >= rectangle_upper_vertex.x && point.x <= rectangle_bottom_vertex.x &&
+        point.y >= rectangle_upper_vertex.y && point.y <= rectangle_bottom_vertex.y {
+            return true;
+    }
+
+    return false;
+}
+
 fn get_middle(position: &Coordinates, size: &Size) -> Coordinates {
     let x = position.x + size.width / 2.0;
     let y = position.y + size.height / 2.0;
@@ -332,5 +343,25 @@ mod tests {
         let expected = Coordinates::new(25.0, 25.0);
 
         assert_eq!(middle, expected);
+    }
+
+    #[test]
+    fn check_if_point_is_contained_within_rectangle_contained_point_is_provided_returns_true() {
+        let position = Coordinates::new(0.0, 0.0);
+        let size = Size::new(50.0, 50.0);
+        let point = Coordinates::new(1.0, 1.0);
+
+        let result = check_if_point_is_contained_within_rectangle(&point, &position, &size);
+        assert_eq!(result, true);
+    }
+
+    #[test]
+    fn check_if_point_is_contained_within_rectangle_not_contained_point_is_provided_returns_false() {
+        let position = Coordinates::new(0.0, 0.0);
+        let size = Size::new(50.0, 50.0);
+        let point = Coordinates::new(60.0, 60.0);
+
+        let result = check_if_point_is_contained_within_rectangle(&point, &position, &size);
+        assert_eq!(result, false);
     }
 }
