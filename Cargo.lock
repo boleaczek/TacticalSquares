@@ -960,7 +960,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tacitcal_squares"
+name = "tactical_squares"
 version = "0.1.0"
 dependencies = [
  "piston 0.49.0 (registry+https://github.com/rust-lang/crates.io-index)",
