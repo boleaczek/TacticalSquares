@@ -5,13 +5,12 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
 pub struct MovementHandler {
     path: Vec<Coordinates>,
     current_position: Coordinates,
-    current_vector: Vector
+    movement: Movement
 }
 
 impl MovementHandler {
     pub fn start(current_position: Coordinates, destination: Coordinates) -> MovementHandler {
-        let vector = Vector::get_vector(&current_position, &destination);
-        let vector = Vector::to_unit_vector(&vector);
+        let movement = Movement::new(&current_position, &destination);
         
         let mut path = Vec::new();
         path.push(destination);
@@ -19,7 +18,7 @@ impl MovementHandler {
         MovementHandler {
             path,
             current_position,
-            current_vector: vector
+            movement
         }
     }
 
@@ -28,8 +27,8 @@ impl MovementHandler {
             return None;
         }
 
-        self.current_position.x += self.current_vector.x;
-        self.current_position.y += self.current_vector.y;
+        self.current_position.x += self.movement.vector.x;
+        self.current_position.y += self.movement.vector.y;
         
         Some(self.current_position.clone())
     }
