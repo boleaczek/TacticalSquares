@@ -48,6 +48,27 @@ impl MovementHandler {
     }
 }
 
+#[derive(PartialEq, Debug)]
+enum MovementDirection {
+    None,
+    Forward,
+    Backward
+}
+
+impl MovementDirection {
+    fn get(a: f64, b: f64) -> MovementDirection {
+        if a < b {
+            return MovementDirection::Forward;
+        }
+        else if a > b {
+            return MovementDirection::Backward;
+        }
+        else {
+            return MovementDirection::None;
+        }
+    }
+}
+
 pub mod pathfinding {
 use crate::algebra_basics::{Coordinates, LineEquation, Vector, Size, RectangleLineEquations};
 use crate::game_data::gameboard::Gameboard;
@@ -267,5 +288,29 @@ use super::*;
 
         assert_eq!(movement_handler.poll_movement().is_some(), true);
         assert_eq!(movement_handler.poll_movement().is_none(), true);
+    }
+
+    #[test]
+    fn movmement_direction_a_lower_than_b_forward_returned() {
+        let direction = MovementDirection::get(0.0, 5.0);
+        let expected_direction = MovementDirection::Forward;
+        
+        assert_eq!(direction, expected_direction);
+    }
+
+    #[test]
+    fn movmement_direction_a_higher_than_b_forward_returned() {
+        let direction = MovementDirection::get(0.5, 0.0);
+        let expected_direction = MovementDirection::Backward;
+        
+        assert_eq!(direction, expected_direction);
+    }
+
+    #[test]
+    fn movmement_direction_a_same_as_b_forward_returned() {
+        let direction = MovementDirection::get(0.0, 0.0);
+        let expected_direction = MovementDirection::None;
+        
+        assert_eq!(direction, expected_direction);
     }
 }
