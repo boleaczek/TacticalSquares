@@ -6,11 +6,13 @@ use crate::game_data::game_object::GameObject;
 use crate::game_data::gameboard;
 use crate::game_controller::movement_manager::MovementHandler;
 
+#[derive(PartialEq, Debug)]
 pub enum UserInput {
     NoInputCursorPos(Coordinates),
     LeftMouse(Coordinates),
     RightMouse(Coordinates),
-    D
+    D,
+    C
 }
 
 impl UserInput {

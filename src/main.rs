@@ -24,7 +24,7 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
 use crate::algebra_basics::{Coordinates, Size};
 use crate::game_controller::game_managers::*;
 use crate::game_controller::utils::PistonEventTranslator;
-use crate::debug_utils::{DebugState, LineObject};
+use crate::debug_utils::{DebugState, LineObject, ConsoleCommand};
 
 struct MainState {
     basic_state: BasicState,
@@ -58,9 +58,11 @@ fn build_state() -> MainState {
 
     let debug_state = DebugState {
         debug_line: initial_line,
-        debug_enabled: false,
+        debug_prints_enabled: false,
+        console_commands_enabled: false,
         last_print_time: time::SystemTime::now(),
-        debug_tick_time: time::Duration::new(20, 0)
+        debug_tick_time: time::Duration::new(20, 0),
+        last_command: ConsoleCommand::None
     };
 
     MainState {
@@ -100,6 +102,7 @@ fn main() {
         state.debug_state = debug_utils::process_debug_line(&state.basic_state, state.debug_state);
         state.debug_state = debug_utils::process_debug_enabled(&state.basic_state, state.debug_state);
         debug_utils::print_object_positions_and_sizes(&state.basic_state, &mut state.debug_state);
+        state.debug_state = debug_utils::process_console_command(state.debug_state);
 
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {

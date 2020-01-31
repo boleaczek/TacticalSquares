@@ -30,6 +30,7 @@ pub mod utils {
                     Button::Keyboard(button) => {
                         match button {
                             Key::D => return UserInput::D,
+                            Key::C => return UserInput::C,
                             _ => {}
                         }
                     },
