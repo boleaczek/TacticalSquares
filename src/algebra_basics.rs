@@ -166,6 +166,30 @@ impl RectangleLineEquations {
 }
 
 #[derive(PartialEq, Debug)]
+pub struct RectangleIntersectionPoints {
+    pub x_0: Option<Coordinates>,
+    pub x_1: Option<Coordinates>,
+    pub y_0: Option<Coordinates>,
+    pub y_1: Option<Coordinates>,
+}
+
+impl RectangleIntersectionPoints {
+    fn get(line_equation: &LineEquation, rectangle_line_equations: &RectangleLineEquations) -> RectangleIntersectionPoints {
+        let x_0 = LineEquation::get_point_of_intersection(line_equation, &rectangle_line_equations.x_0);
+        let x_1 = LineEquation::get_point_of_intersection(line_equation, &rectangle_line_equations.x_1);
+        let y_0 = LineEquation::get_point_of_intersection(line_equation, &rectangle_line_equations.y_0);
+        let y_1 = LineEquation::get_point_of_intersection(line_equation, &rectangle_line_equations.y_1);
+
+        RectangleIntersectionPoints {
+            x_0,
+            x_1,
+            y_0,
+            y_1
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub struct Vector {
     pub x: f64,
     pub y: f64,
