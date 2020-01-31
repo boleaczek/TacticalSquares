@@ -49,6 +49,27 @@ impl MovementHandler {
 }
 
 #[derive(PartialEq, Debug)]
+struct Movement {
+    vector: Vector,
+    direction_x: MovementDirection,
+    direction_y: MovementDirection
+}
+
+impl Movement {
+    fn new(a: &Coordinates, b: &Coordinates) -> Movement {
+        let vector = Vector::to_unit_vector(&Vector::get_vector(a, b));
+        let direction_x = MovementDirection::get(a.x, b.x);
+        let direction_y = MovementDirection::get(a.y, b.y);
+
+        Movement {
+            vector,
+            direction_x,
+            direction_y
+        }
+    } 
+}
+
+#[derive(PartialEq, Debug)]
 enum MovementDirection {
     None,
     Forward,
