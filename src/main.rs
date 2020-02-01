@@ -103,6 +103,7 @@ fn main() {
         state.debug_state = debug_utils::process_debug_enabled(&state.basic_state, state.debug_state);
         debug_utils::print_object_positions_and_sizes(&state.basic_state, &mut state.debug_state);
         state.debug_state = debug_utils::process_console_command(state.debug_state);
+        state.basic_state = debug_utils::apply_console_command_to_basic_state(state.basic_state, &state.debug_state);
 
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {
