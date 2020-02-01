@@ -4,9 +4,11 @@ use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
 use std::num;
+use std::io::prelude::*;
 
 use crate::algebra_basics::{Coordinates};
 use crate::game_controller::game_managers::{BasicState, UserInput};
+use crate::game_data::gameboard::GameboardObjectOperation;
 
 #[derive(PartialEq, Debug)]
 pub enum ConsoleCommand {
@@ -97,7 +99,7 @@ fn current_selected_pos(basic_state: &BasicState) -> Option<&Coordinates> {
 
 enum ConsoleCommandError{
     ParsingError,
-    NotEnoughArguments{expected: usize, got: usize},
+    NotEnoughArguments,
     UnknownCommand
 }
 
@@ -105,7 +107,7 @@ impl fmt::Display for ConsoleCommandError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
             ConsoleCommandError::ParsingError => write!(f, "Incorrect argument provided"),
-            ConsoleCommandError::NotEnoughArguments{expected, got} => write!(f, "Not enough arguments, expected: {}, got: {}", expected, got),
+            ConsoleCommandError::NotEnoughArguments => write!(f, "Not enough arguments"),
             ConsoleCommandError::UnknownCommand => write!(f, "Unknown command"),
         }
     }
@@ -155,21 +157,35 @@ fn parse_command(mut command: String) -> Result<ConsoleCommand, ConsoleCommandEr
     match args[0] {
         "exit" => return Ok(ConsoleCommand::Disable),
         "move" => {
-            return Ok(ConsoleCommand::None);
+            let id: u32 = parse_arg(&args[1..])?;
+            let x: f64 = parse_arg(&args[2..])?;
+            let y: f64 = parse_arg(&args[3..])?;
+            return Ok(ConsoleCommand::MoveObject{id: id, new_position: Coordinates::new(x, y)});
         }
         _ => return Err(ConsoleCommandError::UnknownCommand)
     }
 }
 
-fn parse_arg<T: FromStr>(args: &[&str], arg_position: usize) -> Result<T, ConsoleCommandError> {
-    if let Some(arg) = args.get(arg_position) {
+fn parse_arg<T: FromStr>(args: &[&str]) -> Result<T, ConsoleCommandError> {
+    if let Some(arg) = args.get(0) {
         let parsing_result = T::from_str(arg);
         if let Ok(parsed_arg) =  parsing_result {
             return Ok(parsed_arg);
         }
-
         return Err(ConsoleCommandError::ParsingError);
     }
+    return Err(ConsoleCommandError::NotEnoughArguments);
+}
 
-    return Err(ConsoleCommandError::NotEnoughArguments{expected: arg_position, got: arg_position - 1});
-} 
+pub fn apply_console_command_to_basic_state(mut state: BasicState, debug_state: &DebugState) -> BasicState {
+    if !debug_state.console_commands_enabled {
+        return state;
+    }
+    
+    match &debug_state.last_command {
+        ConsoleCommand::MoveObject{id, new_position} => state.gameboard.execute_operation(*id, GameboardObjectOperation::Move(new_position.clone())),
+        _ => {}
+    }
+
+    return state;
+}
