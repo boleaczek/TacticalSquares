@@ -1,6 +1,9 @@
 use std::time;
 use std::io;
 use std::str::FromStr;
+use std::error::Error;
+use std::fmt;
+use std::num;
 
 use crate::algebra_basics::{Coordinates};
 use crate::game_controller::game_managers::{BasicState, UserInput};
@@ -92,6 +95,22 @@ fn current_selected_pos(basic_state: &BasicState) -> Option<&Coordinates> {
     return None;
 }
 
+enum ConsoleCommandError{
+    ParsingError,
+    NotEnoughArguments{expected: usize, got: usize},
+    UnknownCommand
+}
+
+impl fmt::Display for ConsoleCommandError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            ConsoleCommandError::ParsingError => write!(f, "Incorrect argument provided"),
+            ConsoleCommandError::NotEnoughArguments{expected, got} => write!(f, "Not enough arguments, expected: {}, got: {}", expected, got),
+            ConsoleCommandError::UnknownCommand => write!(f, "Unknown command"),
+        }
+    }
+}
+
 pub fn process_console_command(mut debug_state: DebugState) -> DebugState {
     if !debug_state.console_commands_enabled {
         return debug_state;
@@ -102,9 +121,6 @@ pub fn process_console_command(mut debug_state: DebugState) -> DebugState {
         return debug_state;
     }
 
-    println!("Command mode:\\
-        disable - exit command mode");
-
     let mut input = String::new();
     let command;
     match io::stdin().read_line(&mut input) {
@@ -112,47 +128,48 @@ pub fn process_console_command(mut debug_state: DebugState) -> DebugState {
             command = parse_command(input);
         }
         Err(error) => {
-            command = ConsoleCommand::None;
+            command = Ok(ConsoleCommand::None);
             println!("error: {}", error)
         }
     }
 
-    debug_state.last_command = command;
+    if let Ok(command) = command {
+        debug_state.last_command = command;
+    }
+    else if let Err(error) = command {
+        println!("Error: {}", error);
+    }
+
     return debug_state;
 }
 
-fn parse_command(command: String) -> ConsoleCommand {
+fn parse_command(mut command: String) -> Result<ConsoleCommand, ConsoleCommandError>{
+    command.remove(command.len() - 1);
     
-    if &command == "disable\n" {
-        println!("{}", command);
-        return ConsoleCommand::Disable;
-    }
+    let args: Vec<&str> = command.split(" ").collect();
     
-    let command_part_index = command.find(" ");
-    if command_part_index.is_none() {
-        return ConsoleCommand::None;
-    }
-    
-    let command_part_index = command_part_index.unwrap();
-
-
-    if &command[0..command_part_index] == "move" {
-        
+    if args.len() == 0 {
+        return Ok(ConsoleCommand::None);
     }
 
-
-    println!("Unknown command: {}", command);
-    return ConsoleCommand::None;
-}
-
-fn get_move_command_args(args_part: &str) -> Result<(u32, Coordinates), String> {
-    if let Some(id_part_position) = args_part.find(" ") {
-        if let Some(x_coordinate_part_position) = args_part[(id_part_position + 1)..args_part.len()].find(" ") {
-            if let Some(y_coordinate_part_position) = args_part[(x_coordinate_part_position + 1)..args_part.len()].find(" ") {
-                
-            }
+    match args[0] {
+        "exit" => return Ok(ConsoleCommand::Disable),
+        "move" => {
+            return Ok(ConsoleCommand::None);
         }
+        _ => return Err(ConsoleCommandError::UnknownCommand)
+    }
+}
+
+fn parse_arg<T: FromStr>(args: &[&str], arg_position: usize) -> Result<T, ConsoleCommandError> {
+    if let Some(arg) = args.get(arg_position) {
+        let parsing_result = T::from_str(arg);
+        if let Ok(parsed_arg) =  parsing_result {
+            return Ok(parsed_arg);
+        }
+
+        return Err(ConsoleCommandError::ParsingError);
     }
 
-    unimplemented!();
-}
+    return Err(ConsoleCommandError::NotEnoughArguments{expected: arg_position, got: arg_position - 1});
+} 
