@@ -119,6 +119,7 @@ pub fn process_console_command(mut debug_state: DebugState) -> DebugState {
     }
 
     if debug_state.last_command == ConsoleCommand::Disable {
+        debug_state.last_command = ConsoleCommand::None;
         debug_state.console_commands_enabled = false;
         return debug_state;
     }

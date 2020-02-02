@@ -40,7 +40,7 @@ impl BasicStateContainer for MainState {
 fn build_state() -> MainState {
     let mut gameboard = Gameboard::new();
     let game_object0 = GameObject::new(GameObjectType::Selectable, Coordinates::new(0.0, 0.0), Size::new(50.0, 50.0));
-    let game_object1 = GameObject::new(GameObjectType::Selectable, Coordinates::new(60.0, 0.0), Size::new(50.0, 50.0));
+    let game_object1 = GameObject::new(GameObjectType::Selectable, Coordinates::new(60.0, 0.0), Size::new(50.0, 150.0));
     gameboard.add_object(game_object0);
     gameboard.add_object(game_object1);
 

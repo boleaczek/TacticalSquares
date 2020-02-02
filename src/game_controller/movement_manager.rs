@@ -12,7 +12,6 @@ impl MovementHandler {
     pub fn start(current_position: Coordinates, destination: Coordinates) -> MovementHandler {
         let vector = Vector::get_vector(&current_position, &destination);
         let vector = Vector::to_unit_vector(&vector);
-        
         let mut path = Vec::new();
         path.push(destination);
 
@@ -91,7 +90,7 @@ use crate::game_data::game_object::GameObject;
 
     fn check_if_object_is_an_obstacle(line_equation: &LineEquation,
         direction_x: &MovementDirection,
-        direction_y: MovementDirection,
+        direction_y: &MovementDirection,
         object: &GameObject) -> bool {
         unimplemented!();
     }
@@ -172,17 +171,38 @@ use crate::game_data::game_object::GameObject;
 
         #[test]
         fn check_if_object_is_an_obstacle_x_forward_y_none_obstacle_object_provided_returns_true() {
-            unimplemented!();
+            let direction_x = MovementDirection::Forward;
+            let direction_y = MovementDirection::None;
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(50.0, 50.0), Size::new(100.0, 100.0));
+            let line = LineEquation::Vertical(75.0);
+
+            let result = check_if_object_is_an_obstacle(&line, &direction_x, &direction_y, &game_object);
+
+            assert_eq!(result, true);
         }
 
         #[test]
         fn check_if_object_is_an_obstacle_x_forward_y_none_non_obstacle_object_provided_returns_false() {
-            unimplemented!();
+            let direction_x = MovementDirection::Forward;
+            let direction_y = MovementDirection::None;
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(50.0, 50.0), Size::new(100.0, 100.0));
+            let line = LineEquation::Vertical(0.0);
+
+            let result = check_if_object_is_an_obstacle(&line, &direction_x, &direction_y, &game_object);
+
+            assert_eq!(result, false);
         }
 
         #[test]
         fn check_if_object_is_an_obstacle_x_forward_y_forward_obstacle_object_provided_returns_true() {
-            unimplemented!();
+            let direction_x = MovementDirection::Forward;
+            let direction_y = MovementDirection::Forward;
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(50.0, 50.0), Size::new(100.0, 100.0));
+            let line = LineEquation::Curve{slope: -1.3125, y_intercept: 400.0};
+
+            let result = check_if_object_is_an_obstacle(&line, &direction_x, &direction_y, &game_object);
+
+            assert_eq!(result, true);
         }
 
         #[test]

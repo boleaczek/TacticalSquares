@@ -47,7 +47,7 @@ pub fn check_if_point_is_contained_within_rectangle(point: &Coordinates, rectang
     return false;
 }
 
-fn get_middle(position: &Coordinates, size: &Size) -> Coordinates {
+pub fn get_middle(position: &Coordinates, size: &Size) -> Coordinates {
     let x = position.x + size.width / 2.0;
     let y = position.y + size.height / 2.0;
     return Coordinates::new(x, y);
