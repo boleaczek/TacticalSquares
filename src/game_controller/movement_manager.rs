@@ -51,9 +51,10 @@ impl MovementHandler {
 
 pub mod pathfinding {
 use crate::algebra_basics::{Coordinates, LineEquation, Vector, Size, RectangleLineEquations};
+use crate::algebra_basics;
 use crate::game_data::gameboard::Gameboard;
 use crate::game_data::game_object::GameObject;
-
+    
     #[derive(PartialEq, Debug)]
     enum MovementDirection {
         None,
@@ -79,9 +80,11 @@ use crate::game_data::game_object::GameObject;
         let game_objects = gameboard.get_all_objects();
         let line_equation = LineEquation::get_line_equation(start, destination);
         let mut points = Vec::new();
+        let mut current_x_direction = MovementDirection::get(start.x, destination.y);
+        let mut current_y_direction = MovementDirection::get(start.y, destination.y);
 
         for object in game_objects {
-        
+            
         }
 
         points.push(destination.clone());
@@ -92,7 +95,43 @@ use crate::game_data::game_object::GameObject;
         direction_x: &MovementDirection,
         direction_y: &MovementDirection,
         object: &GameObject) -> bool {
-        unimplemented!();
+        let rect_line_eqs = RectangleLineEquations::get_square_line_equations(&object.position, &object.size);
+        let intersection_points = IntersectionPoints::get_rectangle_intersection_points(&rect_line_eqs, line_equation);
+
+        return intersection_points.check_if_any_intersection_point_is_in_the_area(&object.position, &object.size);
+    }
+
+    struct IntersectionPoints {
+        x_0: Option<Coordinates>,
+        x_1: Option<Coordinates>,
+        y_0: Option<Coordinates>,
+        y_1: Option<Coordinates>
+    }
+
+    impl IntersectionPoints {
+        pub fn get_rectangle_intersection_points(rect_line_equations: &RectangleLineEquations, line_equation: &LineEquation) -> IntersectionPoints {
+            IntersectionPoints {
+                x_0: LineEquation::get_point_of_intersection(line_equation, &rect_line_equations.x_0),
+                x_1: LineEquation::get_point_of_intersection(line_equation, &rect_line_equations.x_1),
+                y_0: LineEquation::get_point_of_intersection(line_equation, &rect_line_equations.y_0),
+                y_1: LineEquation::get_point_of_intersection(line_equation, &rect_line_equations.y_1)
+            }
+        }
+
+        pub fn check_if_any_intersection_point_is_in_the_area(&self, area_upper_vertex: &Coordinates, area_size: &Size) -> bool {
+            IntersectionPoints::check_if_point_contained_within_area(&self.x_0, area_upper_vertex, area_size) ||
+            IntersectionPoints::check_if_point_contained_within_area(&self.x_1, area_upper_vertex, area_size) ||
+            IntersectionPoints::check_if_point_contained_within_area(&self.y_0, area_upper_vertex, area_size) ||
+            IntersectionPoints::check_if_point_contained_within_area(&self.y_1, area_upper_vertex, area_size)
+        }
+
+        fn check_if_point_contained_within_area(point: &Option<Coordinates>, area_upper_vertex: &Coordinates, area_size: &Size) -> bool {
+            if let Some(point) = point {
+                return algebra_basics::check_if_point_is_contained_within_rectangle(point, area_upper_vertex, area_size);
+            }
+
+            return false;
+        }
     }
 
     #[cfg(test)]
@@ -197,58 +236,58 @@ use crate::game_data::game_object::GameObject;
         fn check_if_object_is_an_obstacle_x_forward_y_forward_obstacle_object_provided_returns_true() {
             let direction_x = MovementDirection::Forward;
             let direction_y = MovementDirection::Forward;
-            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(50.0, 50.0), Size::new(100.0, 100.0));
-            let line = LineEquation::Curve{slope: -1.3125, y_intercept: 400.0};
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(200.0, 100.0), Size::new(150.0, 50.0));
+            let line = LineEquation::Curve{slope: 0.9, y_intercept: -160.0};
 
             let result = check_if_object_is_an_obstacle(&line, &direction_x, &direction_y, &game_object);
 
             assert_eq!(result, true);
         }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_forward_y_forward_non_obstacle_object_provided_returns_false() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_forward_y_forward_non_obstacle_object_provided_returns_false() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_forward_y_backward_obstacle_object_provided_returns_true() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_forward_y_backward_obstacle_object_provided_returns_true() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_forward_y_backward_non_obstacle_object_provided_returns_false() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_forward_y_backward_non_obstacle_object_provided_returns_false() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_backward_y_none_obstacle_object_provided_returns_true() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_backward_y_none_obstacle_object_provided_returns_true() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_backward_y_none_non_obstacle_object_provided_returns_false() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_backward_y_none_non_obstacle_object_provided_returns_false() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_backward_y_forward_obstacle_object_provided_returns_true() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_backward_y_forward_obstacle_object_provided_returns_true() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_backward_y_forward_non_obstacle_object_provided_returns_false() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_backward_y_forward_non_obstacle_object_provided_returns_false() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_backward_y_backward_obstacle_object_provided_returns_true() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_backward_y_backward_obstacle_object_provided_returns_true() {
+        //     unimplemented!();
+        // }
 
-        #[test]
-        fn check_if_object_is_an_obstacle_x_backward_y_backwawrd_non_obstacle_object_provided_returns_false() {
-            unimplemented!();
-        }
+        // #[test]
+        // fn check_if_object_is_an_obstacle_x_backward_y_backwawrd_non_obstacle_object_provided_returns_false() {
+        //     unimplemented!();
+        // }
     }
 }
 
