@@ -98,7 +98,7 @@ use crate::game_data::game_object::GameObject;
         Y1
     }
 
-    fn check_if_object_is_an_obstacle(line_equation: &LineEquation, object: &GameObject) -> Vec<IntersectedLines> {
+    fn get_object_intersected_lines(line_equation: &LineEquation, object: &GameObject) -> Vec<IntersectedLines> {
         let rect_line_eqs = RectangleLineEquations::get_square_line_equations(&object.position, &object.size);
         let intersection_points = IntersectionPoints::get_rectangle_intersection_points(&rect_line_eqs, line_equation);
 
