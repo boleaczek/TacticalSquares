@@ -91,7 +91,14 @@ use crate::game_data::game_object::GameObject;
         points
     }
 
-    fn check_if_object_is_an_obstacle(line_equation: &LineEquation, object: &GameObject) -> bool {
+    enum IntersectedPaths {
+        X0,
+        X1,
+        Y0,
+        Y1
+    }
+
+    fn check_if_object_is_an_obstacle(line_equation: &LineEquation, object: &GameObject) -> Vec<IntersectedPaths> {
         let rect_line_eqs = RectangleLineEquations::get_square_line_equations(&object.position, &object.size);
         let intersection_points = IntersectionPoints::get_rectangle_intersection_points(&rect_line_eqs, line_equation);
 
@@ -115,19 +122,25 @@ use crate::game_data::game_object::GameObject;
             }
         }
 
-        pub fn check_if_any_intersection_point_is_in_the_area(&self, area_upper_vertex: &Coordinates, area_size: &Size) -> bool {
-            IntersectionPoints::check_if_point_contained_within_area(&self.x_0, area_upper_vertex, area_size) ||
-            IntersectionPoints::check_if_point_contained_within_area(&self.x_1, area_upper_vertex, area_size) ||
-            IntersectionPoints::check_if_point_contained_within_area(&self.y_0, area_upper_vertex, area_size) ||
-            IntersectionPoints::check_if_point_contained_within_area(&self.y_1, area_upper_vertex, area_size)
+        pub fn check_if_any_intersection_point_is_in_the_area(&self, area_upper_vertex: &Coordinates, area_size: &Size) -> Vec<IntersectedPaths> {
+            let mut intersected_lines = Vec::new();
+            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.x_0, area_upper_vertex, area_size, IntersectedPaths::X0, intersected_lines);
+            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.x_1, area_upper_vertex, area_size, IntersectedPaths::X1, intersected_lines);
+            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.y_0, area_upper_vertex, area_size, IntersectedPaths::Y0, intersected_lines);
+            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.y_1, area_upper_vertex, area_size, IntersectedPaths::Y1, intersected_lines);
+            return intersected_lines;
         }
 
-        fn check_if_point_contained_within_area(point: &Option<Coordinates>, area_upper_vertex: &Coordinates, area_size: &Size) -> bool {
+        fn check_if_point_contained_within_area(point: &Option<Coordinates>, 
+            area_upper_vertex: &Coordinates, 
+            area_size: &Size,
+            push_on_true: IntersectedPaths,
+            mut intersected_lines_collection: Vec<IntersectedPaths>) -> Vec<IntersectedPaths> {
             if let Some(point) = point {
-                return algebra_basics::check_if_point_is_contained_within_rectangle(point, area_upper_vertex, area_size);
+                intersected_lines_collection.push(push_on_true);
             }
 
-            return false;
+            return intersected_lines_collection;
         }
     }
 
