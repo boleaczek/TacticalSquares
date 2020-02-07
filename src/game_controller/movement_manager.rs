@@ -76,19 +76,19 @@ use crate::game_data::game_object::GameObject;
         }
     }
 
-    pub fn find_path(start: &Coordinates, destination: &Coordinates, gameboard: &Gameboard) -> Vec<Coordinates> {
-        let game_objects = gameboard.get_all_objects();
-        let line_equation = LineEquation::get_line_equation(start, destination);
+    pub fn find_path(destination: &Coordinates, game_objects: Vec<&GameObject>, points: Vec<Coordinates>) -> (Vec<Coordinates>, bool) {
+        let point = points.last().unwrap();
+        let line_equation = LineEquation::get_line_equation(point, destination);
         let mut points = Vec::new();
-        let mut current_x_direction = MovementDirection::get(start.x, destination.y);
-        let mut current_y_direction = MovementDirection::get(start.y, destination.y);
-
+        let mut current_x_direction = MovementDirection::get(point.x, destination.y);
+        let mut current_y_direction = MovementDirection::get(point.y, destination.y);
+        
         for object in game_objects {
-            
+            let intersected_lines = get_object_intersected_lines(&line_equation, object);
         }
-
+        
         points.push(destination.clone());
-        points
+        (points, true)
     }
 
     enum IntersectedLines {
@@ -169,29 +169,26 @@ use crate::game_data::game_object::GameObject;
         #[test]
         fn find_path_obstacle_in_front_of_start_on_x_axis_correct_path_with_3_points_is_calculated() {
             let gameboard = setup_gameboard_with_obstacle(Coordinates::new(150.0, 100.0));
-            let path = find_path(&Coordinates::new(100.0, 100.0), &Coordinates::new(200.0, 100.0), &gameboard);
+            let mut path = Vec::new();
+            let result: bool;
+            path.push(Coordinates::new(100.0, 100.0));
+            let (path, result) = find_path(&Coordinates::new(200.0, 100.0), gameboard.get_all_objects(), path);
             assert_eq!(path.len(), 3); 
         }
 
         #[test]
         fn find_path_obstacle_behind_start_on_x_axis_correct_path_with_1_point_is_calculated() {
-            let gameboard = setup_gameboard_with_obstacle(Coordinates::new(100.0, 100.0));
-            let path = find_path(&Coordinates::new(150.0, 100.0), &Coordinates::new(200.0, 100.0), &gameboard);
-            assert_eq!(path.len(), 1);
+            unimplemented!();
         }
 
         #[test]
         fn find_path_obstacle_in_front_of_start_on_y_axis_correct_path_with_3_points_is_calculated() {
-            let gameboard = setup_gameboard_with_obstacle(Coordinates::new(100.0, 150.0));
-            let path = find_path(&Coordinates::new(100.0, 100.0), &Coordinates::new(100.0, 200.0), &gameboard);
-            assert_eq!(path.len(), 3);
+            unimplemented!();
         }
 
         #[test]
         fn find_path_obstacle_behind_start_on_y_axis_correct_path_with_1_point_is_calculated() {
-            let gameboard = setup_gameboard_with_obstacle(Coordinates::new(100.0, 100.0));
-            let path = find_path(&Coordinates::new(100.0, 150.0), &Coordinates::new(100.0, 200.0), &gameboard);
-            assert_eq!(path.len(), 1);
+            unimplemented!();
         }
 
         #[test]
