@@ -71,7 +71,7 @@ where S: BasicStateContainer {
     if let UserInput::RightMouse(destination) = &basic_state.external_event {
         let selected = basic_state.gameboard.get_object_by_id(basic_state.current_selected_id).unwrap();
         let start = selected.position.clone();
-        let movement_manager = MovementHandler::start(start, destination.clone());
+        let movement_manager = MovementHandler::start(start, destination.clone(), &basic_state.gameboard.get_all_objects());
         basic_state.movements.insert(basic_state.current_selected_id, movement_manager);
     }
 
