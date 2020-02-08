@@ -92,7 +92,9 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
                 continue;
             }
 
-            let intersected_lines = get_object_intersected_lines(&line_equation, object);
+            let intersected_lines = check_if_path_intersects_object(&line_equation, object);
+
+
         }
         
         points.push(destination.clone());
@@ -160,14 +162,7 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
         }
     }
 
-    struct LineIntersectionData {
-        x_0: bool,
-        x_1: bool,
-        y_0: bool,
-        y_1: bool
-    }
-
-    fn get_object_intersected_lines(line_equation: &LineEquation, object: &GameObject) -> LineIntersectionData {
+    fn check_if_path_intersects_object(line_equation: &LineEquation, object: &GameObject) -> bool {
         let rect_line_eqs = RectangleLineEquations::get_square_line_equations(&object.position, &object.size);
         let intersection_points = IntersectionPoints::get_rectangle_intersection_points(&rect_line_eqs, line_equation);
 
@@ -191,13 +186,12 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
             }
         }
 
-        pub fn check_if_any_intersection_point_is_in_the_area(&self, area_upper_vertex: &Coordinates, area_size: &Size) -> LineIntersectionData {
-            return LineIntersectionData {
-                x_0: IntersectionPoints::check_if_point_contained_within_area(&self.x_0, area_upper_vertex, area_size),
-                x_1: IntersectionPoints::check_if_point_contained_within_area(&self.x_1, area_upper_vertex, area_size),
-                y_0: IntersectionPoints::check_if_point_contained_within_area(&self.y_0, area_upper_vertex, area_size),
-                y_1: IntersectionPoints::check_if_point_contained_within_area(&self.y_1, area_upper_vertex, area_size)
-            }
+        pub fn check_if_any_intersection_point_is_in_the_area(&self, area_upper_vertex: &Coordinates, area_size: &Size) -> bool {
+            return IntersectionPoints::check_if_point_contained_within_area(&self.x_0, area_upper_vertex, area_size) &&
+                IntersectionPoints::check_if_point_contained_within_area(&self.x_1, area_upper_vertex, area_size) &&
+                IntersectionPoints::check_if_point_contained_within_area(&self.y_0, area_upper_vertex, area_size) &&
+                IntersectionPoints::check_if_point_contained_within_area(&self.y_1, area_upper_vertex, area_size);
+            
         }
 
         fn check_if_point_contained_within_area(point: &Option<Coordinates>, 
