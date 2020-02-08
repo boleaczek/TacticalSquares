@@ -53,7 +53,7 @@ pub mod pathfinding {
 use crate::algebra_basics::{Coordinates, LineEquation, Vector, Size, RectangleLineEquations};
 use crate::algebra_basics;
 use crate::game_data::gameboard::Gameboard;
-use crate::game_data::game_object::GameObject;
+use crate::game_data::game_object::{GameObject, GameObjectType};
     
     #[derive(PartialEq, Debug)]
     enum MovementDirection {
@@ -76,7 +76,7 @@ use crate::game_data::game_object::GameObject;
         }
     }
 
-    pub fn find_path(destination: &Coordinates, game_objects: Vec<&GameObject>, points: Vec<Coordinates>) -> (Vec<Coordinates>, bool) {
+    pub fn find_path(start: &Coordinates, destination: &Coordinates, game_objects: Vec<&GameObject>, points: Vec<Coordinates>) -> (Vec<Coordinates>, bool) {
         let point = points.last().unwrap();
         let line_equation = LineEquation::get_line_equation(point, destination);
         let mut points = Vec::new();
@@ -84,6 +84,14 @@ use crate::game_data::game_object::GameObject;
         let mut current_y_direction = MovementDirection::get(point.y, destination.y);
         
         for object in game_objects {
+            if object.object_type == GameObjectType::Static {
+                continue;
+            }
+
+            if !is_object_on_path(object, destination, &current_x_direction, &current_y_direction) {
+                continue;
+            }
+
             let intersected_lines = get_object_intersected_lines(&line_equation, object);
         }
         
@@ -91,14 +99,75 @@ use crate::game_data::game_object::GameObject;
         (points, true)
     }
 
-    enum IntersectedLines {
-        X0,
-        X1,
-        Y0,
-        Y1
+    fn is_object_on_path(object: &GameObject,
+        destination_coordinates: &Coordinates,
+        direction_x: &MovementDirection,
+        direction_y: &MovementDirection) -> bool {
+        let object_position = &object.position;
+        
+        return is_on_path_for_direction(destination_coordinates.x, object_position.x, direction_x) &&
+            is_on_path_for_direction(destination_coordinates.y, object_position.y, direction_y);
     }
 
-    fn get_object_intersected_lines(line_equation: &LineEquation, object: &GameObject) -> Vec<IntersectedLines> {
+    fn is_on_path_for_direction(destination_coordinate: f64, object_coordinate: f64, direction: &MovementDirection) -> bool {
+        match direction {
+            MovementDirection::Forward => {
+                return object_coordinate > destination_coordinate;
+            },
+            MovementDirection::Backward => {
+                return object_coordinate < destination_coordinate;
+            },
+            MovementDirection::None => {
+                return false;
+            }
+        };
+    }
+
+    fn get_next_two_points(object_line_equations: &RectangleLineEquations,
+        direction_x: &MovementDirection, 
+        direction_y: &MovementDirection) -> (Coordinates, Coordinates) {
+        match direction_x {
+            MovementDirection::Forward => return get_next_two_points_for_x_forward(object_line_equations, direction_y),
+            MovementDirection::Backward => return get_next_two_points_for_x_backward(object_line_equations, direction_y),
+            MovementDirection::None => return get_next_two_points_for_x_none(object_line_equations, direction_y)
+        }
+    }
+
+    fn get_next_two_points_for_x_forward(object_line_equations: &RectangleLineEquations, direction_y: &MovementDirection) -> (Coordinates, Coordinates) {
+        let (x_0, x_1, y_0, y_1) = object_line_equations.to_floats();
+        match direction_y {
+            MovementDirection::Forward => { return (Coordinates::new(x_0, y_0), Coordinates::new(x_1, y_1)); },
+            MovementDirection::Backward => { return (Coordinates::new(x_1, y_0), Coordinates::new(x_0, y_1)); },
+            MovementDirection::None => { return (Coordinates::new(x_0, y_0), Coordinates::new(x_0, y_1)); }
+        }
+    }
+
+    fn get_next_two_points_for_x_backward(object_line_equations: &RectangleLineEquations, direction_y: &MovementDirection) -> (Coordinates, Coordinates) {
+        let (x_0, x_1, y_0, y_1) = object_line_equations.to_floats();
+        match direction_y {
+            MovementDirection::Forward => { return (Coordinates::new(x_1, y_0), Coordinates::new(x_0, y_1)); },
+            MovementDirection::Backward => { return (Coordinates::new(x_0, y_1), Coordinates::new(x_1, y_1)); },
+            MovementDirection::None => { return (Coordinates::new(x_1, y_0), Coordinates::new(x_1, y_1)); }
+        }
+    }
+
+    fn get_next_two_points_for_x_none(object_line_equations: &RectangleLineEquations, direction_y: &MovementDirection) -> (Coordinates, Coordinates) {
+        let (x_0, x_1, y_0, y_1) = object_line_equations.to_floats();
+        match direction_y {
+            MovementDirection::Forward => { return (Coordinates::new(x_0, y_1), Coordinates::new(x_1, y_1)); },
+            MovementDirection::Backward => { return (Coordinates::new(x_0, y_0), Coordinates::new(x_0, y_1)); },
+            MovementDirection::None => panic!("(None,None) movement direction")
+        }
+    }
+
+    struct LineIntersectionData {
+        x_0: bool,
+        x_1: bool,
+        y_0: bool,
+        y_1: bool
+    }
+
+    fn get_object_intersected_lines(line_equation: &LineEquation, object: &GameObject) -> LineIntersectionData {
         let rect_line_eqs = RectangleLineEquations::get_square_line_equations(&object.position, &object.size);
         let intersection_points = IntersectionPoints::get_rectangle_intersection_points(&rect_line_eqs, line_equation);
 
@@ -122,25 +191,23 @@ use crate::game_data::game_object::GameObject;
             }
         }
 
-        pub fn check_if_any_intersection_point_is_in_the_area(&self, area_upper_vertex: &Coordinates, area_size: &Size) -> Vec<IntersectedLines> {
-            let mut intersected_lines = Vec::new();
-            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.x_0, area_upper_vertex, area_size, IntersectedLines::X0, intersected_lines);
-            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.x_1, area_upper_vertex, area_size, IntersectedLines::X1, intersected_lines);
-            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.y_0, area_upper_vertex, area_size, IntersectedLines::Y0, intersected_lines);
-            intersected_lines = IntersectionPoints::check_if_point_contained_within_area(&self.y_1, area_upper_vertex, area_size, IntersectedLines::Y1, intersected_lines);
-            return intersected_lines;
+        pub fn check_if_any_intersection_point_is_in_the_area(&self, area_upper_vertex: &Coordinates, area_size: &Size) -> LineIntersectionData {
+            return LineIntersectionData {
+                x_0: IntersectionPoints::check_if_point_contained_within_area(&self.x_0, area_upper_vertex, area_size),
+                x_1: IntersectionPoints::check_if_point_contained_within_area(&self.x_1, area_upper_vertex, area_size),
+                y_0: IntersectionPoints::check_if_point_contained_within_area(&self.y_0, area_upper_vertex, area_size),
+                y_1: IntersectionPoints::check_if_point_contained_within_area(&self.y_1, area_upper_vertex, area_size)
+            }
         }
 
         fn check_if_point_contained_within_area(point: &Option<Coordinates>, 
             area_upper_vertex: &Coordinates, 
-            area_size: &Size,
-            push_on_true: IntersectedLines,
-            mut intersected_lines_collection: Vec<IntersectedLines>) -> Vec<IntersectedLines> {
+            area_size: &Size) -> bool {
             if let Some(point) = point {
-                intersected_lines_collection.push(push_on_true);
+                return algebra_basics::check_if_point_is_contained_within_rectangle(point, area_upper_vertex, area_size);
             }
 
-            return intersected_lines_collection;
+            return false;
         }
     }
 
@@ -168,12 +235,13 @@ use crate::game_data::game_object::GameObject;
 
         #[test]
         fn find_path_obstacle_in_front_of_start_on_x_axis_correct_path_with_3_points_is_calculated() {
-            let gameboard = setup_gameboard_with_obstacle(Coordinates::new(150.0, 100.0));
-            let mut path = Vec::new();
-            let result: bool;
-            path.push(Coordinates::new(100.0, 100.0));
-            let (path, result) = find_path(&Coordinates::new(200.0, 100.0), gameboard.get_all_objects(), path);
-            assert_eq!(path.len(), 3); 
+            // let gameboard = setup_gameboard_with_obstacle(Coordinates::new(150.0, 100.0));
+            // let mut path = Vec::new();
+            // let result: bool;
+            // path.push(Coordinates::new(100.0, 100.0));
+            // let (path, result) = find_path(&Coordinates::new(200.0, 100.0), gameboard.get_all_objects(), path);
+            // assert_eq!(path.len(), 3); 
+            unimplemented!();
         }
 
         #[test]
