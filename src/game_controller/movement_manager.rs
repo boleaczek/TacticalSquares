@@ -76,12 +76,12 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
         }
     }
 
-    pub fn find_path(start: &Coordinates, destination: &Coordinates, game_objects: Vec<&GameObject>, points: Vec<Coordinates>) -> (Vec<Coordinates>, bool) {
+    pub fn find_path(start: &Coordinates, destination: &Coordinates, game_objects: &Vec<&GameObject>, points: Vec<Coordinates>) -> Vec<Coordinates> {
         let point = points.last().unwrap();
         let line_equation = LineEquation::get_line_equation(point, destination);
         let mut points = Vec::new();
-        let mut current_x_direction = MovementDirection::get(point.x, destination.y);
-        let mut current_y_direction = MovementDirection::get(point.y, destination.y);
+        let current_x_direction = MovementDirection::get(point.x, destination.y);
+        let current_y_direction = MovementDirection::get(point.y, destination.y);
         
         for object in game_objects {
             if object.object_type == GameObjectType::Static {
@@ -94,11 +94,18 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
 
             let intersected_lines = check_if_path_intersects_object(&line_equation, object);
 
+            if intersected_lines {
+                let object_line_equations = RectangleLineEquations::get_square_line_equations(&object.position, &object.size);
+                let next_points = get_next_two_points(&object_line_equations, &current_x_direction, &current_y_direction);
+                points = find_path(&next_points.0, destination, game_objects, points);
+                points = find_path(&next_points.1, destination, game_objects, points);
+                points.push(start.clone());
 
+                return points;
+            }
         }
         
-        points.push(destination.clone());
-        (points, true)
+        return points;
     }
 
     fn is_object_on_path(object: &GameObject,
