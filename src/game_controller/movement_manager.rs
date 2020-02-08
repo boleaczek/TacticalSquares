@@ -78,14 +78,13 @@ use crate::game_data::game_object::{GameObject, GameObjectType};
     }
 
     pub fn find_path(start: &Coordinates, destination: &Coordinates, game_objects: &Vec<&GameObject>, points: Vec<Coordinates>) -> Vec<Coordinates> {
-        let point = points.last().unwrap();
-        let line_equation = LineEquation::get_line_equation(point, destination);
+        let line_equation = LineEquation::get_line_equation(start, destination);
         let mut points = Vec::new();
-        let current_x_direction = MovementDirection::get(point.x, destination.y);
-        let current_y_direction = MovementDirection::get(point.y, destination.y);
+        let current_x_direction = MovementDirection::get(start.x, destination.y);
+        let current_y_direction = MovementDirection::get(start.y, destination.y);
         
         for object in game_objects {
-            if object.object_type == GameObjectType::Static {
+            if object.object_type != GameObjectType::Static {
                 continue;
             }
 
