@@ -22,6 +22,7 @@ impl Coordinates {
     }
 }
 
+#[derive(PartialEq, Debug, Clone)]
 pub struct Size {
     pub width: f64,
     pub height: f64
@@ -53,6 +54,7 @@ pub fn get_middle(position: &Coordinates, size: &Size) -> Coordinates {
     return Coordinates::new(x, y);
 }
 
+#[derive(PartialEq, Debug, Clone)]
 pub struct RectangleVertexes {
     pub upper_left: Coordinates,
     pub lower_left: Coordinates,
@@ -64,7 +66,7 @@ impl RectangleVertexes {
     pub fn get(upper_left_vertex: &Coordinates, size: &Size) -> RectangleVertexes {
         RectangleVertexes {
             upper_left: upper_left_vertex.clone(),
-            lower_left: Coordinates::new(upper_left_vertex.x, upper_left_vertex.y - size.height),
+            lower_left: Coordinates::new(upper_left_vertex.x, upper_left_vertex.y + size.height),
             upper_right: Coordinates::new(upper_left_vertex.x + size.width, upper_left_vertex.y),
             lower_right: Coordinates::new(upper_left_vertex.x + size.width, upper_left_vertex.y + size.height)
         }
@@ -405,5 +407,21 @@ mod tests {
 
         let result = check_if_point_is_contained_within_rectangle(&point, &position, &size);
         assert_eq!(result, false);
+    }
+
+    #[test]
+    fn rectangle_vertexes_get_returns_correct_vertexes() {
+        let rect_position = Coordinates::new(1.0, 0.0);
+        let rect_size = Size::new(5.0, 5.0);
+
+        let vertexes = RectangleVertexes::get(&rect_position, &rect_size);
+        let expected = RectangleVertexes {
+            upper_left: Coordinates::new(1.0, 0.0),
+            lower_left: Coordinates::new(1.0, 5.0),
+            upper_right: Coordinates::new(6.0, 0.0),
+            lower_right: Coordinates::new(6.0, 5.0)
+        };
+
+        assert_eq!(vertexes, expected);
     }
 }
