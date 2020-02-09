@@ -182,7 +182,6 @@ use crate::game_data::gameboard;
             let expected_blocked_nodes = vec![&blocked_node_0, &blocked_node_1];
 
             assert_eq!(node_map.nodes.len(), 20);
-            assert_eq!(blocked_nodes.len(), 2);
             assert_eq!(blocked_nodes, expected_blocked_nodes);
         }
 
@@ -239,8 +238,11 @@ use crate::game_data::gameboard;
                 return false;
             }).collect();
 
+            let blocked_node_0 = Node::Blocked(Coordinates::new(5.0, 5.0));
+            let expected_blocked_nodes = vec![&blocked_node_0];
+
             assert_eq!(node_map.nodes.len(), 20);
-            assert_eq!(blocked_nodes.len(), 1);
+            assert_eq!(blocked_nodes, expected_blocked_nodes);
         }
     }
 }
