@@ -136,7 +136,7 @@ use crate::game_data::gameboard;
         #[test]
         fn node_map_get_returns_correct_node_map_no_obstacles_provided_every_node_is_free() {
             let objects = vec![];
-            let area = Area::new(Coordinates::new(10.0, 2.0), Size::new(10.0, 8.0));
+            let area = Area::new(Coordinates::new(4.0, 2.0), Size::new(10.0, 8.0));
             let node_size = Size::new(2.0, 2.0);
 
             let node_map = NodeMap::get(area, objects, &node_size);
@@ -155,7 +155,7 @@ use crate::game_data::gameboard;
         fn node_map_get_returns_correct_node_map_obstacles_provided_correct_nodes_are_blocked() {
             let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(4.0, 2.0), Size::new(2.0, 4.0));
             let objects = vec![&game_object];
-            let area = Area::new(Coordinates::new(10.0, 2.0), Size::new(10.0, 8.0));
+            let area = Area::new(Coordinates::new(4.0, 2.0), Size::new(10.0, 8.0));
             let node_size = Size::new(2.0, 2.0);
 
             let node_map = NodeMap::get(area, objects, &node_size);
