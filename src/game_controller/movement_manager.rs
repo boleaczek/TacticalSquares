@@ -60,7 +60,17 @@ use crate::game_data::gameboard;
     #[derive(PartialEq, Debug)]
     enum Node {
         Blocked(Coordinates),
-        Free(Coordinates)
+        Free{position: Coordinates, g_cost: u32, h_cost: u32}
+    }
+
+    impl Node {
+        pub fn new_free(position: Coordinates, g_cost: u32, h_cost: u32) -> Node {
+            Node::Free {
+                position,
+                g_cost,
+                h_cost
+            }
+        }
     }
 
     #[derive(PartialEq, Debug)]
@@ -110,7 +120,7 @@ use crate::game_data::gameboard;
                         nodes.push(Node::Blocked(node_coordinates));
                     }
                     else {
-                        nodes.push(Node::Free(node_coordinates));
+                        nodes.push(Node::new_free(node_coordinates, 0, 0));
                     }
 
                     current_x += node_size.width;
