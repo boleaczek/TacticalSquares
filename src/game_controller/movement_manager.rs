@@ -116,7 +116,6 @@ use crate::game_data::gameboard;
                     });
 
                     if let Some(_) = is_node_free {
-                        // println!("blocked for: row: {}, col: {}", row, col);
                         nodes.push(Node::Blocked(node_coordinates));
                     }
                     else {
