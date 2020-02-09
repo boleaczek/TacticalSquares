@@ -177,6 +177,63 @@ use crate::game_data::gameboard;
             assert_eq!(blocked_nodes.len(), 2);
             assert_eq!(blocked_nodes, expected_blocked_nodes);
         }
+
+        #[test]
+        fn node_map_get_returns_correct_node_map_obstacles_not_contained_within_area_provided_no_nodes_are_blocked() {
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(0.0, 2.0), Size::new(2.0, 2.0));
+            let objects = vec![&game_object];
+            let area = Area::new(Coordinates::new(4.0, 2.0), Size::new(10.0, 8.0));
+            let node_size = Size::new(2.0, 2.0);
+
+            let node_map = NodeMap::get(area, objects, &node_size);
+            let blocked_nodes: Vec<&Node> = node_map.nodes.iter().filter(|node| {
+                if let Node::Blocked(_) = node {
+                    return true;
+                }
+                return false;
+            }).collect();
+
+            assert_eq!(node_map.nodes.len(), 20);
+            assert_eq!(blocked_nodes.len(), 0);
+        }
+
+        #[test]
+        fn node_map_get_returns_correct_node_map_obstacles_on_the_edge_of_the_area_provided_no_nodes_are_blocked() {
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(2.0, 2.0), Size::new(2.0, 2.0));
+            let objects = vec![&game_object];
+            let area = Area::new(Coordinates::new(4.0, 2.0), Size::new(10.0, 8.0));
+            let node_size = Size::new(2.0, 2.0);
+
+            let node_map = NodeMap::get(area, objects, &node_size);
+            let blocked_nodes: Vec<&Node> = node_map.nodes.iter().filter(|node| {
+                if let Node::Blocked(_) = node {
+                    return true;
+                }
+                return false;
+            }).collect();
+
+            assert_eq!(node_map.nodes.len(), 20);
+            assert_eq!(blocked_nodes.len(), 0);
+        }
+
+        #[test]
+        fn node_map_get_returns_correct_node_map_half_of_the_obstacle_is_within_the_area_provided_correct_nodes_are_blocked() {
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(2.0, 4.0), Size::new(4.0, 2.0));
+            let objects = vec![&game_object];
+            let area = Area::new(Coordinates::new(4.0, 2.0), Size::new(10.0, 8.0));
+            let node_size = Size::new(2.0, 2.0);
+
+            let node_map = NodeMap::get(area, objects, &node_size);
+            let blocked_nodes: Vec<&Node> = node_map.nodes.iter().filter(|node| {
+                if let Node::Blocked(_) = node {
+                    return true;
+                }
+                return false;
+            }).collect();
+
+            assert_eq!(node_map.nodes.len(), 20);
+            assert_eq!(blocked_nodes.len(), 1);
+        }
     }
 }
 
