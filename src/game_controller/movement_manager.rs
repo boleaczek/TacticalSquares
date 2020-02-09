@@ -71,6 +71,15 @@ use crate::game_data::gameboard;
         size: Size
     }
 
+    impl Area {
+        pub fn new(upper_left_vertex: Coordinates, size: Size) -> Area {
+            Area {
+                upper_left_vertex,
+                size
+            }
+        }
+    }
+
     impl NodeMap {
         pub fn get(area: Area, game_objects: Vec<&GameObject>, node_size: &Size) -> NodeMap {
             let objects_in_the_area: Vec<&GameObject> = game_objects.into_iter().filter(|object| {
@@ -126,12 +135,39 @@ use crate::game_data::gameboard;
 
         #[test]
         fn node_map_get_returns_correct_node_map_no_obstacles_provided_every_node_is_free() {
-            unimplemented!();
+            let objects = vec![];
+            let area = Area::new(Coordinates::new(10.0, 2.0), Size::new(10.0, 8.0));
+            let node_size = Size::new(2.0, 2.0);
+
+            let node_map = NodeMap::get(area, objects, &node_size);
+            let blocked_nodes: Vec<&Node> = node_map.nodes.iter().filter(|node| {
+                if let Node::Blocked(_) = node {
+                    return true;
+                }
+                return false;
+            }).collect();
+
+            assert_eq!(node_map.nodes.len(), 20);
+            assert_eq!(blocked_nodes.len(), 0);
         }
 
         #[test]
         fn node_map_get_returns_correct_node_map_obstacles_provided_correct_nodes_are_blocked() {
-            unimplemented!();
+            let game_object = GameObject::new(GameObjectType::Static, Coordinates::new(4.0, 2.0), Size::new(2.0, 4.0));
+            let objects = vec![&game_object];
+            let area = Area::new(Coordinates::new(10.0, 2.0), Size::new(10.0, 8.0));
+            let node_size = Size::new(2.0, 2.0);
+
+            let node_map = NodeMap::get(area, objects, &node_size);
+            let blocked_nodes: Vec<&Node> = node_map.nodes.iter().filter(|node| {
+                if let Node::Blocked(_) = node {
+                    return true;
+                }
+                return false;
+            }).collect();
+
+            assert_eq!(node_map.nodes.len(), 20);
+            assert_eq!(blocked_nodes.len(), 2);
         }
     }
 }
