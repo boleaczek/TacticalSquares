@@ -13,7 +13,7 @@ impl MovementHandler {
         let vector = Vector::get_vector(&current_position, &destination);
         let vector = Vector::to_unit_vector(&vector);
         let mut path = Vec::new();
-        path = pathfinding::find_path(&current_position, &destination, game_objects, path);
+        // path = pathfinding::find_path(&current_position, &destination, game_objects, path);
         path.push(destination);
 
         MovementHandler {
@@ -51,14 +51,88 @@ impl MovementHandler {
 
 
 pub mod pathfinding {
-use crate::algebra_basics::{Coordinates, LineEquation, Vector, Size, RectangleLineEquations};
+use crate::algebra_basics::{Coordinates, Size, RectangleVertexes};
 use crate::algebra_basics;
 use crate::game_data::gameboard::Gameboard;
 use crate::game_data::game_object::{GameObject, GameObjectType};
+use crate::game_data::gameboard;
 
     enum Node {
-        Blocked,
-        NonBlocked
+        Blocked(Coordinates),
+        Free(Coordinates)
+    }
+
+    struct NodeMap {
+        nodes: Vec<Node>
+    }
+
+    pub struct Area {
+        upper_left_vertex: Coordinates,
+        size: Size
+    }
+
+    impl NodeMap {
+        pub fn get(area: Area, game_objects: Vec<&GameObject>, node_size: &Size) -> NodeMap {
+            let objects_in_the_area: Vec<&GameObject> = game_objects.into_iter().filter(|object| {
+                let vertexes = RectangleVertexes::get(&object.position, &object.size);
+                return check_if_object_contains_rectanlge(&vertexes, object);
+            }).collect();
+
+            let cols = (area.size.height / node_size.height) as usize;
+            let rows = (area.size.width / node_size.width) as usize;
+            
+            let mut current_y = area.upper_left_vertex.y;
+
+            let mut nodes = Vec::new();
+            for _ in 0..rows {
+                let mut current_x = area.upper_left_vertex.x;
+                for _ in 0..cols {
+                    let node_coordinates = Coordinates::new(current_x, current_y);
+                    let node_vertexes = RectangleVertexes::get(&node_coordinates, node_size);
+                    
+                    let is_node_free = objects_in_the_area.iter().find(|object| {
+                        return check_if_object_contains_rectanlge(&node_vertexes, object);
+                    });
+
+                    if let Some(_) = is_node_free {
+                        nodes.push(Node::Blocked(node_coordinates));
+                    }
+                    else {
+                        nodes.push(Node::Free(node_coordinates));
+                    }
+
+                    current_x += node_size.width;
+                }
+
+                current_y += node_size.height;
+            }
+            
+            NodeMap {
+                nodes
+            }
+        }
+    }
+
+    fn check_if_object_contains_rectanlge(rectangle_vertexes: &RectangleVertexes, object: &GameObject) -> bool {
+        return  gameboard::check_if_object_area_contains_coordinates(&object, &rectangle_vertexes.lower_left) ||
+                gameboard::check_if_object_area_contains_coordinates(&object, &rectangle_vertexes.lower_right) ||
+                gameboard::check_if_object_area_contains_coordinates(&object, &rectangle_vertexes.upper_left) ||
+                gameboard::check_if_object_area_contains_coordinates(&object, &rectangle_vertexes.upper_right);
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn node_map_get_returns_correct_node_map_no_obstacles_provided_every_node_is_free() {
+            unimplemented!();
+        }
+
+        #[test]
+        fn node_map_get_returns_correct_node_map_obstacles_provided_correct_nodes_are_blocked() {
+            unimplemented!();
+        }
     }
 }
 
