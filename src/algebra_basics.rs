@@ -40,8 +40,8 @@ impl Size {
 pub fn check_if_point_is_contained_within_rectangle(point: &Coordinates, rectangle_upper_vertex: &Coordinates, size: &Size) -> bool {
     let rectangle_bottom_vertex = Coordinates::new(rectangle_upper_vertex.x + size.width, rectangle_upper_vertex.y + size.height);
 
-    if point.x > rectangle_upper_vertex.x && point.x < rectangle_bottom_vertex.x &&
-        point.y > rectangle_upper_vertex.y && point.y < rectangle_bottom_vertex.y {
+    if point.x >= rectangle_upper_vertex.x && point.x <= rectangle_bottom_vertex.x &&
+        point.y >= rectangle_upper_vertex.y && point.y <= rectangle_bottom_vertex.y {
             return true;
     }
 

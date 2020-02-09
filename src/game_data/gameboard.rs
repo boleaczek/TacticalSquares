@@ -68,7 +68,7 @@ impl Gameboard {
 pub fn check_if_object_area_contains_coordinates(object: &GameObject, coordinates: &Coordinates) -> bool {
     let object_size = &object.size;
     let object_position = &object.position;
-    
+    println!("object: {:?} | {:?}, coordinates: {:?}", object.position, object.size, coordinates);
     return algebra_basics::check_if_point_is_contained_within_rectangle(coordinates, object_position, object_size);
 }
 

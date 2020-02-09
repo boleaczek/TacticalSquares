@@ -108,11 +108,10 @@ use crate::game_data::gameboard;
             for _ in 0..rows {
                 let mut current_x = area.upper_left_vertex.x;
                 for _ in 0..cols {
-                    let node_coordinates = Coordinates::new(current_x, current_y);
-                    let node_vertexes = RectangleVertexes::get(&node_coordinates, node_size);
+                    let node_coordinates = algebra_basics::get_middle(&Coordinates::new(current_x, current_y), node_size);
                     
                     let is_node_free = objects_in_the_area.iter().find(|object| {
-                        return check_if_object_contains_rectanlge(&node_vertexes, object);
+                        return gameboard::check_if_object_area_contains_coordinates(object, &node_coordinates);
                     });
 
                     if let Some(_) = is_node_free {
