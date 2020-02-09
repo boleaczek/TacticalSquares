@@ -53,6 +53,24 @@ pub fn get_middle(position: &Coordinates, size: &Size) -> Coordinates {
     return Coordinates::new(x, y);
 }
 
+pub struct RectangleVertexes {
+    pub upper_left: Coordinates,
+    pub lower_left: Coordinates,
+    pub upper_right: Coordinates,
+    pub lower_right: Coordinates
+}
+
+impl RectangleVertexes {
+    pub fn get(upper_left_vertex: &Coordinates, size: &Size) -> RectangleVertexes {
+        RectangleVertexes {
+            upper_left: upper_left_vertex.clone(),
+            lower_left: Coordinates::new(upper_left_vertex.x, upper_left_vertex.y - size.height),
+            upper_right: Coordinates::new(upper_left_vertex.x + size.width, upper_left_vertex.y),
+            lower_right: Coordinates::new(upper_left_vertex.x + size.width, upper_left_vertex.y + size.height)
+        }
+    }
+}
+
 #[derive(PartialEq, Debug)]
 pub enum LineEquation {
     Vertical(f64), // x = constant
